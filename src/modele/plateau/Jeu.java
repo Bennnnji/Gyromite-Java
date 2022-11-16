@@ -5,6 +5,7 @@
  */
 package modele.plateau;
 
+import modele.deplacements.ColonneDepl;
 import modele.deplacements.Controle4Directions;
 import modele.deplacements.Direction;
 import modele.deplacements.Gravite;
@@ -57,12 +58,17 @@ public class Jeu {
         hector = new Heros(this);
         addEntite(hector, 2, 1);
 
+        Colonne c = new Colonne(this);
+
         Gravite g = new Gravite();
         g.addEntiteDynamique(hector);
         ordonnanceur.add(g);
 
+        ColonneDepl.getInstance().addEntiteDynamique(c);
         Controle4Directions.getInstance().addEntiteDynamique(hector);
+        ordonnanceur.add(ColonneDepl.getInstance());
         ordonnanceur.add(Controle4Directions.getInstance());
+
 
         // murs extérieurs horizontaux
         for (int x = 0; x < 20; x++) {
@@ -78,6 +84,7 @@ public class Jeu {
 
         addEntite(new Mur(this), 2, 6);
         addEntite(new Mur(this), 3, 6);
+        addEntite(c, 5, 8);
     }
 
     private void addEntite(Entite e, int x, int y) {
