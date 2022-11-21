@@ -12,15 +12,18 @@ import modele.deplacements.Gravite;
 import modele.deplacements.Ordonnanceur;
 
 import java.awt.Point;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.Scanner;
 
 /** Actuellement, cette classe gère les postions
  * (ajouter conditions de victoire, chargement du plateau, etc.)
  */
 public class Jeu {
 
-    public static final int SIZE_X = 20;
-    public static final int SIZE_Y = 10;
+    public static final int SIZE_X = 27;
+    public static final int SIZE_Y = 18;
 
     // compteur de déplacements horizontal et vertical (1 max par défaut, à chaque pas de temps)
     private HashMap<Entite, Integer> cmptDeplH = new HashMap<Entite, Integer>();
@@ -32,6 +35,10 @@ public class Jeu {
     private Entite[][] grilleEntites = new Entite[SIZE_X][SIZE_Y]; // permet de récupérer une entité à partir de ses coordonnées
 
     private Ordonnanceur ordonnanceur = new Ordonnanceur(this);
+
+    // Tableau de sting qui contient le plateau de jeu
+    private String[] prebuildmap = new String[SIZE_Y * SIZE_X];
+
 
     public Jeu() {
         initialisationDesEntites();
@@ -69,21 +76,14 @@ public class Jeu {
         ordonnanceur.add(ColonneDepl.getInstance());
         ordonnanceur.add(Controle4Directions.getInstance());
 
-
-        // murs extérieurs horizontaux
-        for (int x = 0; x < 20; x++) {
-            addEntite(new Mur(this), x, 0);
-            addEntite(new Mur(this), x, 9);
+        getStaticMap();
+        for (int i = 0; i < SIZE_Y; i++) {
+            for (int j = 0; j < SIZE_X; j++) {
+                if (prebuildmap[i].charAt(j) == '1') {
+                    addEntite(new Mur(this), j, i);
+                }
+            }
         }
-
-        // murs extérieurs verticaux
-        for (int y = 1; y < 9; y++) {
-            addEntite(new Mur(this), 0, y);
-            addEntite(new Mur(this), 19, y);
-        }
-
-        addEntite(new Mur(this), 2, 6);
-        addEntite(new Mur(this), 3, 6);
         addEntite(c, 5, 8);
     }
 
@@ -178,5 +178,24 @@ public class Jeu {
 
     public Ordonnanceur getOrdonnanceur() {
         return ordonnanceur;
+    }
+
+    private void getStaticMap(){
+        {
+            File myObj = new File("mapLVL1.txt");
+
+            try {
+                Scanner myReader = new Scanner(myObj);
+                int i = 0;
+                while (myReader.hasNextLine()) {
+                    String data = myReader.nextLine();
+                    prebuildmap[i] = data;
+                    i++;
+                }
+
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
