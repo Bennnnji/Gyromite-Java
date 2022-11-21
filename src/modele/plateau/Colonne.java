@@ -6,4 +6,6 @@ public class Colonne extends EntiteDynamique {
     public boolean peutEtreEcrase() { return false; }
     public boolean peutServirDeSupport() { return true; }
     public boolean peutPermettreDeMonterDescendre() { return false; };
+
+    public boolean peutEtreRamasse() { return false; }
 }

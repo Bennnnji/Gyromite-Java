@@ -20,4 +20,6 @@ public class Bot extends EntiteDynamique {
     public boolean peutEtreEcrase() { return true; }
     public boolean peutServirDeSupport() { return true; }
     public boolean peutPermettreDeMonterDescendre() { return false; };
+
+    public boolean peutEtreRamasse() { return false; }
 }

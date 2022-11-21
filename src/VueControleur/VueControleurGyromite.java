@@ -11,6 +11,7 @@ import java.util.Observer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.naming.ldap.Control;
 import javax.swing.*;
 
 import modele.deplacements.Controle4Directions;
@@ -32,16 +33,31 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     // icones affichées dans la grille
     private ImageIcon icoHero;
+    private ImageIcon icoHeroDroite;
+    private ImageIcon icoHeroGauche;
+
+    private ImageIcon icoHeroGrimpe;
+
     private ImageIcon icoBot;
     private ImageIcon icoVide;
-    private ImageIcon icoMur;
+    private ImageIcon icoMurHorizontal;
+
+    private ImageIcon icoMurVertical;
+
+    private ImageIcon icoMurBrique;
+
+    private ImageIcon icoBombe;
+
+    private ImageIcon icoLiane;
+
+    private ImageIcon icoSupportColonne;
     private ImageIcon icoColonne;
 
     private JLabel[][] tabJLabel; // cases graphique (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
 
     public VueControleurGyromite(Jeu _jeu) {
-        sizeX = _jeu.SIZE_X;
+        sizeX = jeu.SIZE_X;
         sizeY = _jeu.SIZE_Y;
         jeu = _jeu;
 
@@ -68,12 +84,31 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
 
     private void chargerLesIcones() {
-        icoHero = chargerIcone("Images/player.png", 0, 0, 35, 40);//chargerIcone("Images/Pacman.png");
-        //icoBot = chargerIcone("Images/smick.png", 0, 0, 20, 20);//chargerIcone("Images/Pacman.png");
+        icoHero = chargerIcone("Images/player.png", 160, 0, 32, 44);
+        icoHeroGauche = chargerIcone("Images/player.png", 0, 0, 32, 44);
+        icoHeroDroite = chargerIcone("Images/player-2.png", 160, 0, 32, 44);
+        icoHeroGrimpe = chargerIcone("Images/player.png", 0, 88, 32, 44);
 
-        icoVide = chargerIcone("Images/Vide.png", 0, 0, 16, 16);
+
+
+        icoBot = chargerIcone("Images/smick.png", 0, 0, 20, 20);//chargerIcone("Images/Pacman.png");
+
+        icoVide = chargerIcone("Images/tileset.png", 64, 0, 16, 14);
+
         icoColonne = chargerIcone("Images/Colonne.png", 0, 0, 16, 16);
-        icoMur = chargerIcone("Images/tileset.png", 0, 1, 16 ,14);
+
+        icoMurHorizontal = chargerIcone("Images/tileset.png", 0, 1, 16 ,14);
+
+        icoMurVertical = chargerIcone("Images/tileset.png", 2, 16, 12, 16);
+
+        icoMurBrique = chargerIcone("Images/tileset.png", 33, 1, 15, 15);
+
+        icoBombe = chargerIcone("Images/bomb.png", 20, 16, 26, 32);
+
+        icoLiane = chargerIcone("Images/tileset.png", 17, 0, 14, 16);
+
+        icoSupportColonne = chargerIcone("Images/tileset.png", 17, 18, 16, 14);
+
     }
 
     private void placerLesComposantsGraphiques() {
@@ -82,7 +117,6 @@ public class VueControleurGyromite extends JFrame implements Observer {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // permet de terminer l'application à la fermeture de la fenêtre
 
         JComponent grilleJLabels = new JPanel(new GridLayout(sizeY, sizeX)); // grilleJLabels va contenir les cases graphiques et les positionner sous la forme d'une grille
-
         tabJLabel = new JLabel[sizeX][sizeY];
 
         for (int y = 0; y < sizeY; y++) {
@@ -101,12 +135,30 @@ public class VueControleurGyromite extends JFrame implements Observer {
      * Il y a une grille du côté du modèle ( jeu.getGrille() ) et une grille du côté de la vue (tabJLabel)
      */
     private void mettreAJourAffichage() {
-
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 if (jeu.getGrille()[x][y] instanceof Heros) { // si la grille du modèle contient un Pacman, on associe l'icône Pacman du côté de la vue
 
-                    tabJLabel[x][y].setIcon(icoHero);
+                    Direction dir = Controle4Directions.getDirectionPrecedente(); // on récupère la direction précédente du heros
+
+                    if(jeu.HeroSurCorde)
+                    {
+                        tabJLabel[x][y].setIcon(icoHeroGrimpe);
+                    }
+                    else
+                    {
+                        // on associe l'icône correspondant à la direction précédente
+                        if (dir == Direction.gauche) {
+                            tabJLabel[x][y].setIcon(icoHeroGauche);
+                        }
+                        else if (dir == Direction.droite) {
+                            tabJLabel[x][y].setIcon(icoHeroDroite);
+                        }
+                        else {
+                            tabJLabel[x][y].setIcon(icoHero);
+                        }
+                    }
+
 
                     // si transparence : images avec canal alpha + dessins manuels (voir ci-dessous + créer composant qui redéfinie paint(Graphics g)), se documenter
                     //BufferedImage bi = getImage("Images/smick.png", 0, 0, 20, 20);
@@ -116,7 +168,19 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     tabJLabel[x][y].setIcon(icoBot);
 
                 } else if (jeu.getGrille()[x][y] instanceof Mur) {
-                    tabJLabel[x][y].setIcon(icoMur);
+                    tabJLabel[x][y].setIcon(icoMurHorizontal);
+                } else if (jeu.getGrille()[x][y] instanceof MurVertical) {
+                    tabJLabel[x][y].setIcon(icoMurVertical);
+                } else if (jeu.getGrille()[x][y] instanceof MurBrique) {
+                    tabJLabel[x][y].setIcon(icoMurBrique);
+                } else if (jeu.getGrille()[x][y] instanceof Colonne) {
+                    tabJLabel[x][y].setIcon(icoColonne);
+                } else if (jeu.getGrille()[x][y] instanceof SupportColonne) {
+                    tabJLabel[x][y].setIcon(icoSupportColonne);
+                } else if (jeu.getGrille()[x][y] instanceof Liane) {
+                    tabJLabel[x][y].setIcon(icoLiane);
+                } else if (jeu.getGrille()[x][y] instanceof Bombe) {
+                    tabJLabel[x][y].setIcon(icoBombe);
                 } else if (jeu.getGrille()[x][y] instanceof Colonne) {
                     tabJLabel[x][y].setIcon(icoColonne);
                 } else {

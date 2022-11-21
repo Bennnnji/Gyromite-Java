@@ -7,9 +7,12 @@ import modele.plateau.EntiteDynamique;
  * Controle4Directions permet d'appliquer une direction (connexion avec le clavier) à un ensemble d'entités dynamiques
  */
 public class Controle4Directions extends RealisateurDeDeplacement {
-    private Direction directionCourante;
+    private static Direction directionCourante;
+    private static Direction directionPrecedente;
     // Design pattern singleton
     private static Controle4Directions c3d;
+
+
 
     public static Controle4Directions getInstance() {
         if (c3d == null) {
@@ -18,17 +21,23 @@ public class Controle4Directions extends RealisateurDeDeplacement {
         return c3d;
     }
 
+    public static Direction getDirectionPrecedente() {
+        return directionPrecedente;
+    }
+
     public void setDirectionCourante(Direction _directionCourante) {
         directionCourante = _directionCourante;
     }
+
+
 
     public boolean realiserDeplacement() {
         boolean ret = false;
         for (EntiteDynamique e : lstEntitesDynamiques) {
             if (directionCourante != null)
                 switch (directionCourante) {
-                    case gauche:
-                    case droite:
+                    case gauche, droite:
+                        directionPrecedente = directionCourante;
                         if (e.avancerDirectionChoisie(directionCourante))
                             ret = true;
                         break;
@@ -42,6 +51,12 @@ public class Controle4Directions extends RealisateurDeDeplacement {
                                 ret = true;
                         }
                         break;
+                    // droite
+                    case bas:
+                        if (e.avancerDirectionChoisie(Direction.bas))
+                            ret = true;
+                        break;
+
                 }
         }
 

@@ -22,8 +22,12 @@ import java.util.Scanner;
  */
 public class Jeu {
 
-    public static final int SIZE_X = 27;
-    public static final int SIZE_Y = 18;
+    public static final int SIZE_X = 28; // taille du plateau
+    public static final int SIZE_Y = 18; // taille du plateau
+
+    private int bombe_restante;
+    public int nb_vie = 3;
+    private int score = 0;
 
     // compteur de déplacements horizontal et vertical (1 max par défaut, à chaque pas de temps)
     private HashMap<Entite, Integer> cmptDeplH = new HashMap<Entite, Integer>();
@@ -60,10 +64,14 @@ public class Jeu {
     public Heros getHector() {
         return hector;
     }
+
+    public boolean HeroSurCorde = false;
+
+    public boolean BotSurCorde = false;
     
     private void initialisationDesEntites() {
         hector = new Heros(this);
-        addEntite(hector, 2, 1);
+        addEntite(hector, 1, 1);
 
         Colonne c = new Colonne(this);
 
@@ -80,11 +88,34 @@ public class Jeu {
         for (int i = 0; i < SIZE_Y; i++) {
             for (int j = 0; j < SIZE_X; j++) {
                 if (prebuildmap[i].charAt(j) == '1') {
+                    addEntite(new MurVertical(this), j, i);
+                }
+                else if (prebuildmap[i].charAt(j) == '2') {
                     addEntite(new Mur(this), j, i);
                 }
+                else if (prebuildmap[i].charAt(j) == '3') {
+                    addEntite(new MurBrique(this), j, i);
+                }
+                else if (prebuildmap[i].charAt(j) == 'G') {
+                    addEntite(new SupportColonne(this), j, i);
+                }
+                else if (prebuildmap[i].charAt(j) == 'B') {
+                    addEntite(new Bombe(this), j, i);
+                    bombe_restante++;
+                }
+                else if (prebuildmap[i].charAt(j) == 'M') {
+                    addEntite(new Bot(this), j, i);
+                }
+                else if (prebuildmap[i].charAt(j) == 'L'){
+                    addEntite(new Liane(this), j, i);
+                }
+                else if (prebuildmap[i].charAt(j) == 'X') {
+                    addEntite(new Colonne(this), j, i);
+                }
+
             }
+
         }
-        addEntite(c, 5, 8);
     }
 
     private void addEntite(Entite e, int x, int y) {
@@ -105,29 +136,31 @@ public class Jeu {
      */
     public boolean deplacerEntite(Entite e, Direction d) {
         boolean retour = false;
-        
+
         Point pCourant = map.get(e);
         
         Point pCible = calculerPointCible(pCourant, d);
         
-        if (contenuDansGrille(pCible) && objetALaPosition(pCible) == null) { // a adapter (collisions murs, etc.)
+        if (contenuDansGrille(pCible) && objetALaPosition(pCible) == null || objetALaPosition(pCible).peutEtreRamasse() ==true  || objetALaPosition(pCible).peutPermettreDeMonterDescendre() == true) { // a adapter (collisions murs, etc.)
             // compter le déplacement : 1 deplacement horizontal et vertical max par pas de temps par entité
             switch (d) {
-                case bas:
-                case haut:
+                case bas, haut:
+                {
                     if (cmptDeplV.get(e) == null) {
                         cmptDeplV.put(e, 1);
 
                         retour = true;
                     }
+                }
                     break;
-                case gauche:
-                case droite:
+                case gauche, droite: {
+
                     if (cmptDeplH.get(e) == null) {
                         cmptDeplH.put(e, 1);
                         retour = true;
 
                     }
+                }
                     break;
             }
         }
@@ -147,7 +180,7 @@ public class Jeu {
             case haut: pCible = new Point(pCourant.x, pCourant.y - 1); break;
             case bas : pCible = new Point(pCourant.x, pCourant.y + 1); break;
             case gauche : pCible = new Point(pCourant.x - 1, pCourant.y); break;
-            case droite : pCible = new Point(pCourant.x + 1, pCourant.y); break;     
+            case droite : pCible = new Point(pCourant.x + 1, pCourant.y); break;
             
         }
         
@@ -156,8 +189,68 @@ public class Jeu {
     
     private void deplacerEntite(Point pCourant, Point pCible, Entite e) {
         grilleEntites[pCourant.x][pCourant.y] = null;
-        grilleEntites[pCible.x][pCible.y] = e;
-        map.put(e, pCible);
+
+        boolean BombeRamasse = false;
+
+        // si la case cible contient bien une entité
+        if(contenuDansGrille(pCible))
+        {
+            if (objetALaPosition(pCible) instanceof Bombe && e instanceof Heros) {
+                    BombeRamasse = true;
+                    System.out.println("Bombe ramassée");
+                    bombe_restante--;
+                    map.remove(objetALaPosition(pCible));
+                    if (bombe_restante == 0) {
+                        System.out.println("Vous avez gagné !");
+                        //System.exit(0);
+                    }
+                    System.out.println("Il reste " + bombe_restante + " bombes");
+                    score += 100;
+                    System.out.println("Score : " + score);
+            }
+            else if(objetALaPosition(pCible) instanceof Bombe && e instanceof Bot )
+            {
+            }
+
+            // si l'entité est un héros, on vérifie si il y a une Liane à la position cible
+            if (grilleEntites[pCible.x][pCible.y] instanceof Liane && e instanceof Heros) {
+                grilleEntites[pCible.x][pCible.y] = e; // on déplace l'entité sur la Liane
+                map.put(e, pCible); // on met à jour la position de l'entité dans la map
+
+                // on vérifie si l'entité est sur une Liane
+                if(HeroSurCorde){
+                    grilleEntites[pCourant.x][pCourant.y] = new Liane(this); // on remet une Liane à la position précédente
+                }
+                HeroSurCorde = true;
+            }
+            // si l'entité est un Bot, on vérifie si il y a une Liane à la position cible
+            else if ((grilleEntites[pCible.x][pCible.y] instanceof Liane && e instanceof Bot)){
+                grilleEntites[pCible.x][pCible.y] = e; // on déplace l'entité sur la Liane
+                map.put(e, pCible); // on met à jour la position de l'entité dans la map
+                if(BotSurCorde){
+                    grilleEntites[pCourant.x][pCourant.y] = new Liane(this); // on remet une Liane à la position précédente
+                }
+                BotSurCorde = true;
+            }
+            else {
+                grilleEntites[pCourant.x][pCourant.y] = null;
+                grilleEntites[pCible.x][pCible.y] = e;
+                map.put(e, pCible);
+
+                // on vérifie si l'entité est sur une Liane
+                if(HeroSurCorde && e instanceof Heros){
+                    grilleEntites[pCourant.x][pCourant.y] = new Liane(this); // on remet une Liane à la position précédente
+                    HeroSurCorde = false;
+                }
+                if(BotSurCorde && e instanceof Bot){
+                    grilleEntites[pCourant.x][pCourant.y] = new Liane(this); // on remet une Liane à la position précédente
+                    BotSurCorde = false;
+                }
+            }
+
+        }
+
+
     }
     
     /** Indique si p est contenu dans la grille
