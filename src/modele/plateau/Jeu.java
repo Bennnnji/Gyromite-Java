@@ -56,19 +56,14 @@ public class Jeu {
     public void start(long _pause) {
         ordonnanceur.start(_pause);
     }
-    
+
     public Entite[][] getGrille() {
         return grilleEntites;
     }
-    
-    public Heros getHector() {
-        return hector;
-    }
-
     public boolean HeroSurCorde = false;
 
     public boolean BotSurCorde = false;
-    
+
     private void initialisationDesEntites() {
         hector = new Heros(this);
         addEntite(hector, 1, 1);
@@ -122,38 +117,67 @@ public class Jeu {
         grilleEntites[x][y] = e;
         map.put(e, new Point(x, y));
     }
-    
+
+    public void supprimerEntite(Entite e) {
+        Point p = map.get(e);
+        grilleEntites[p.x][p.y] = null;
+        map.remove(e);
+    }
+
     /** Permet par exemple a une entité  de percevoir sont environnement proche et de définir sa stratégie de déplacement
+     * <p>
      *
      */
     public Entite regarderDansLaDirection(Entite e, Direction d) {
         Point positionEntite = map.get(e);
         return objetALaPosition(calculerPointCible(positionEntite, d));
     }
-    
+
     /** Si le déplacement de l'entité est autorisé (pas de mur ou autre entité), il est réalisé
      * Sinon, rien n'est fait.
      */
     public boolean deplacerEntite(Entite e, Direction d) {
         boolean retour = false;
 
-        Point pCourant = map.get(e);
-        
-        Point pCible = calculerPointCible(pCourant, d);
-        
-        if (contenuDansGrille(pCible) && objetALaPosition(pCible) == null || objetALaPosition(pCible).peutEtreRamasse() ==true  || objetALaPosition(pCible).peutPermettreDeMonterDescendre() == true) { // a adapter (collisions murs, etc.)
+        Point pCourant = map.get(e); // position courante de l'entité
+
+        Point pCible = calculerPointCible(pCourant, d); // calcul de la position cible
+
+        // si la case cible contient une bombe
+        if (objetALaPosition(pCible) instanceof Bombe && e instanceof Heros) {
+            System.out.println("Bombe ramassée");
+            bombe_restante--;
+            supprimerEntite(objetALaPosition(pCible));
+            System.out.println("Il reste " + bombe_restante + " bombes");
+            score += 100;
+            System.out.println("Score : " + score);
+        }
+        // si la case cible contient un smick
+        if(objetALaPosition(pCible) instanceof Bot && e instanceof Heros) {
+            // si le prof arrive au dessus du smick
+            if (d == Direction.bas) {
+                System.out.println("Smicks Ecrasé");
+                score += 50;
+                System.out.println("Score : " + score);
+                supprimerEntite(objetALaPosition(pCible));
+            } else {
+                System.out.println("Collision avec un Smicks");
+                nb_vie--;
+                System.out.println("Il vous reste " + nb_vie + " vies");
+            }
+        }
+        if (contenuDansGrille(pCible) && objetALaPosition(pCible) == null
+                || objetALaPosition(pCible).peutEtreRamasse() || objetALaPosition(pCible).peutPermettreDeMonterDescendre()) { // a adapter (collisions murs, etc.)
             // compter le déplacement : 1 deplacement horizontal et vertical max par pas de temps par entité
             switch (d) {
-                case bas, haut:
-                {
+                case bas, haut -> {
                     if (cmptDeplV.get(e) == null) {
                         cmptDeplV.put(e, 1);
 
                         retour = true;
                     }
                 }
-                    break;
-                case gauche, droite: {
+                case gauche, droite -> {
 
                     if (cmptDeplH.get(e) == null) {
                         cmptDeplH.put(e, 1);
@@ -161,7 +185,6 @@ public class Jeu {
 
                     }
                 }
-                    break;
             }
         }
 
@@ -171,49 +194,27 @@ public class Jeu {
 
         return retour;
     }
-    
-    
+
+
     private Point calculerPointCible(Point pCourant, Direction d) {
-        Point pCible = null;
-        
-        switch(d) {
-            case haut: pCible = new Point(pCourant.x, pCourant.y - 1); break;
-            case bas : pCible = new Point(pCourant.x, pCourant.y + 1); break;
-            case gauche : pCible = new Point(pCourant.x - 1, pCourant.y); break;
-            case droite : pCible = new Point(pCourant.x + 1, pCourant.y); break;
-            
-        }
-        
-        return pCible;
+
+        return switch (d) {
+            case haut -> new Point(pCourant.x, pCourant.y - 1);
+            case bas -> new Point(pCourant.x, pCourant.y + 1);
+            case gauche -> new Point(pCourant.x - 1, pCourant.y);
+            case droite -> new Point(pCourant.x + 1, pCourant.y);
+        };
     }
-    
+
+    // Permet de déplacer une entité d'une case à une autre
     private void deplacerEntite(Point pCourant, Point pCible, Entite e) {
         grilleEntites[pCourant.x][pCourant.y] = null;
-
-        boolean BombeRamasse = false;
 
         // si la case cible contient bien une entité
         if(contenuDansGrille(pCible))
         {
-            if (objetALaPosition(pCible) instanceof Bombe && e instanceof Heros) {
-                    BombeRamasse = true;
-                    System.out.println("Bombe ramassée");
-                    bombe_restante--;
-                    map.remove(objetALaPosition(pCible));
-                    if (bombe_restante == 0) {
-                        System.out.println("Vous avez gagné !");
-                        //System.exit(0);
-                    }
-                    System.out.println("Il reste " + bombe_restante + " bombes");
-                    score += 100;
-                    System.out.println("Score : " + score);
-            }
-            else if(objetALaPosition(pCible) instanceof Bombe && e instanceof Bot )
-            {
-            }
-
             // si l'entité est un héros, on vérifie si il y a une Liane à la position cible
-            if (grilleEntites[pCible.x][pCible.y] instanceof Liane && e instanceof Heros) {
+            if (objetALaPosition(pCible) instanceof Liane && e instanceof Heros) {
                 grilleEntites[pCible.x][pCible.y] = e; // on déplace l'entité sur la Liane
                 map.put(e, pCible); // on met à jour la position de l'entité dans la map
 
@@ -224,7 +225,7 @@ public class Jeu {
                 HeroSurCorde = true;
             }
             // si l'entité est un Bot, on vérifie si il y a une Liane à la position cible
-            else if ((grilleEntites[pCible.x][pCible.y] instanceof Liane && e instanceof Bot)){
+            else if ((objetALaPosition(pCible) instanceof Liane && e instanceof Bot)){
                 grilleEntites[pCible.x][pCible.y] = e; // on déplace l'entité sur la Liane
                 map.put(e, pCible); // on met à jour la position de l'entité dans la map
                 if(BotSurCorde){
@@ -232,6 +233,7 @@ public class Jeu {
                 }
                 BotSurCorde = true;
             }
+            // sinon deplace l'entité sur la case cible
             else {
                 grilleEntites[pCourant.x][pCourant.y] = null;
                 grilleEntites[pCible.x][pCible.y] = e;
@@ -252,20 +254,20 @@ public class Jeu {
 
 
     }
-    
+
     /** Indique si p est contenu dans la grille
      */
     private boolean contenuDansGrille(Point p) {
         return p.x >= 0 && p.x < SIZE_X && p.y >= 0 && p.y < SIZE_Y;
     }
-    
+
     private Entite objetALaPosition(Point p) {
         Entite retour = null;
-        
+
         if (contenuDansGrille(p)) {
             retour = grilleEntites[p.x][p.y];
         }
-        
+
         return retour;
     }
 
@@ -290,5 +292,21 @@ public class Jeu {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean GameIsFinished(){
+
+        if(bombe_restante <= 0){
+            System.out.println("Vous avez gagné !");
+
+            return true;
+        }
+        if(nb_vie <= 0){
+            System.out.println("Vous avez perdu !");
+            System.out.println("Votre score est de : " + score);
+            return true;
+        }
+
+        return false;
     }
 }

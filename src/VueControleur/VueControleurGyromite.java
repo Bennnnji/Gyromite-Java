@@ -130,7 +130,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
         add(grilleJLabels);
     }
 
-    
+
     /**
      * Il y a une grille du côté du modèle ( jeu.getGrille() ) et une grille du côté de la vue (tabJLabel)
      */
@@ -192,14 +192,22 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        mettreAJourAffichage();
+        if(jeu.GameIsFinished())
+        {
+            JOptionPane.showMessageDialog(this, "Game Over");
+            System.exit(0);
+        }
+        else
+            mettreAJourAffichage();
 
+        /*
         SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         mettreAJourAffichage();
                     }
-                }); 
+                });
+        */
 
 
     }
