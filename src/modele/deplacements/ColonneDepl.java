@@ -4,55 +4,58 @@ import modele.plateau.Entite;
 import modele.plateau.EntiteDynamique;
 
 /**
- * A la reception d'une commande, toutes les cases (EntitesDynamiques) des
- * colonnes se déplacent dans la direction définie
- * (vérifier "collisions" avec le héros)
+ * Controle4Directions permet d'appliquer une direction (connexion avec le clavier) à un ensemble d'entités dynamiques
  */
 public class ColonneDepl extends RealisateurDeDeplacement {
-
     private Direction directionCourante;
-    private static ColonneDepl c3d;
+    // Design pattern singleton
+    private static ColonneDepl cCol;
+    private boolean estEnHaut = false; /** position of the column. false for down, true for up */
+    private static final int HAUTEUR_DEPLACEMENT = 2; /** nombre de mouvement des colonnes */
+    private int nbrDeplacement = 0; /** nombre courant de deplacement */
 
     public static ColonneDepl getInstance() {
-        if (c3d == null) {
-            c3d = new ColonneDepl();
+        if (cCol == null) {
+            cCol = new ColonneDepl();
         }
-        return c3d;
+        return cCol;
     }
 
-    public void setDirectionCourante(Direction _directionCourante) {
-        directionCourante = _directionCourante;
+    public static ColonneDepl reset() {
+        cCol = new ColonneDepl();
+        return cCol;
     }
 
-    protected boolean realiserDeplacement() {
+    public void setDirectionCourante() {
+        directionCourante = estEnHaut ? Direction.bas : Direction.haut;
+    }
+
+    public boolean realiserDeplacement() {
         boolean ret = false;
         for (EntiteDynamique e : lstEntitesDynamiques) {
-            if (directionCourante != null)
-                switch (directionCourante) {
-
-                    case haut:
-                        // on ne peut pas sauter sans prendre appui
-                        // (attention, test d'appui réalisé à partir de la position courante, si la
-                        // gravité à été appliquée, il ne s'agit pas de la position affichée,
-                        // amélioration possible)
-                        Entite eHaut = e.regarderDansLaDirection(Direction.haut);
-                        if ((eHaut != null && !eHaut.peutServirDeSupport()) || (eHaut == null)) {
-                            if (e.avancerDirectionChoisie(Direction.haut))
-                                ret = true;
-
-                        }
-                        break;
-                    case bas:
-                        Entite eBas = e.regarderDansLaDirection(Direction.bas);
-                        if ((eBas != null && !eBas.peutServirDeSupport()) || (eBas == null))
-                            if (e.avancerDirectionChoisie(Direction.bas))
-                                ret = true;
-                }
+            int nbrColonne = lstEntitesDynamiques.size();
+            if (directionCourante != null && nbrDeplacement < (HAUTEUR_DEPLACEMENT * nbrColonne)){
+                System.out.print("nbDeplacement : ");
+                System.out.println(nbrDeplacement);
+                System.out.print("hauteur max : ");
+                System.out.println(nbrColonne*HAUTEUR_DEPLACEMENT);
+                ret = e.avancerDirectionChoisie(directionCourante);
+                if (ret)
+                    nbrDeplacement++;
+                //HAUTEUR_DEPLACEMENT * (lstEntitesDynamiques.size() + 1)
+            }
+            else if (nbrDeplacement >= (HAUTEUR_DEPLACEMENT * nbrColonne)) {
+                resetDirection();
+                estEnHaut = !estEnHaut;
+                nbrDeplacement = 0;
+            }
         }
+
         return ret;
     }
 
     public void resetDirection() {
         directionCourante = null;
     }
+
 }

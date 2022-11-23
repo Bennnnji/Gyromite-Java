@@ -5,11 +5,7 @@
  */
 package modele.plateau;
 
-import modele.deplacements.ColonneDepl;
-import modele.deplacements.Controle4Directions;
-import modele.deplacements.Direction;
-import modele.deplacements.Gravite;
-import modele.deplacements.Ordonnanceur;
+import modele.deplacements.*;
 
 import java.io.*;
 import java.awt.Point;
@@ -76,6 +72,7 @@ public class Jeu {
         Controle4Directions.getInstance().addEntiteDynamique(hector);
         ordonnanceur.add(ColonneDepl.getInstance());
         ordonnanceur.add(Controle4Directions.getInstance());
+        ordonnanceur.add(IA.getInstance());
 
         getStaticMap();
         for (int i = 0; i < SIZE_Y; i++) {
@@ -97,15 +94,25 @@ public class Jeu {
                     bombe_restante++;
                 }
                 else if (prebuildmap[i].charAt(j) == 'M') {
-                    addEntite(new Bot(this), j, i);
+                    Bot b = new Bot(this);
+                    addEntite(b, j, i);
+                    IA.getInstance().addEntiteDynamique(b);
+
                 }
                 else if (prebuildmap[i].charAt(j) == 'L'){
                     addEntite(new Liane(this), j, i);
                 }
                 else if (prebuildmap[i].charAt(j) == 'X') {
-                    Colonne col = new Colonne(this);
-                    addEntite(col, j, i);
-                    ColonneDepl.getInstance().addEntiteDynamique(col);
+                     Pilier pil = new Pilier(this);
+                    for(int k = 0; k < 3; k++)
+                    {
+                        Colonne elemCol = new Colonne(this);
+                        addEntite(elemCol, j,i-k);
+                        pil.addColonne(elemCol);
+
+                    }
+                    ColonneDepl.getInstance().addEntiteDynamique(pil);
+                    ordonnanceur.add(ColonneDepl.getInstance());
                 }
 
             }
