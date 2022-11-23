@@ -55,6 +55,12 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     private JLabel[][] tabJLabel; // cases graphique (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
+    // Game state
+    private int gameState;
+    private int titleState = 0;
+    private int playState = 1;
+    private int scoreState = 2;
+
 
     public VueControleurGyromite(Jeu _jeu) {
         sizeX = jeu.SIZE_X;
@@ -116,6 +122,26 @@ public class VueControleurGyromite extends JFrame implements Observer {
         setSize(1080, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // permet de terminer l'application à la fermeture de la fenêtre
 
+        // On place les composants graphiques
+        JPanel panneauPrincipal = new JPanel();
+        panneauPrincipal.setLayout(new BorderLayout());
+        setContentPane(panneauPrincipal);
+
+        // On place le menu en haut
+        JPanel menu = new JPanel();
+        menu.setLayout(new GridLayout(2, 3));
+        panneauPrincipal.add(menu, BorderLayout.NORTH);
+
+        // on place le le score, le nombre de vie et nombre de bombes dans le menu
+        JLabel score = new JLabel("Score : ");
+        JLabel vie = new JLabel("Vie : ");
+        JLabel bombes = new JLabel("Bombes : ");
+        menu.add(score);
+        menu.add(vie);
+        menu.add(bombes);
+
+
+
         JComponent grilleJLabels = new JPanel(new GridLayout(sizeY, sizeX)); // grilleJLabels va contenir les cases graphiques et les positionner sous la forme d'une grille
         tabJLabel = new JLabel[sizeX][sizeY];
 
@@ -127,7 +153,8 @@ public class VueControleurGyromite extends JFrame implements Observer {
                 grilleJLabels.add(jlab);
             }
         }
-        add(grilleJLabels);
+        panneauPrincipal.add(grilleJLabels, BorderLayout.CENTER);
+
     }
 
 

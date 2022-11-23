@@ -11,6 +11,7 @@ import modele.deplacements.Direction;
 import modele.deplacements.Gravite;
 import modele.deplacements.Ordonnanceur;
 
+import java.io.*;
 import java.awt.Point;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -67,14 +68,11 @@ public class Jeu {
     private void initialisationDesEntites() {
         hector = new Heros(this);
         addEntite(hector, 1, 1);
-
-        Colonne c = new Colonne(this);
-
         Gravite g = new Gravite();
         g.addEntiteDynamique(hector);
         ordonnanceur.add(g);
 
-        ColonneDepl.getInstance().addEntiteDynamique(c);
+
         Controle4Directions.getInstance().addEntiteDynamique(hector);
         ordonnanceur.add(ColonneDepl.getInstance());
         ordonnanceur.add(Controle4Directions.getInstance());
@@ -105,7 +103,9 @@ public class Jeu {
                     addEntite(new Liane(this), j, i);
                 }
                 else if (prebuildmap[i].charAt(j) == 'X') {
-                    addEntite(new Colonne(this), j, i);
+                    Colonne col = new Colonne(this);
+                    addEntite(col, j, i);
+                    ColonneDepl.getInstance().addEntiteDynamique(col);
                 }
 
             }
@@ -233,7 +233,6 @@ public class Jeu {
                 }
                 BotSurCorde = true;
             }
-            // sinon deplace l'entité sur la case cible
             else {
                 grilleEntites[pCourant.x][pCourant.y] = null;
                 grilleEntites[pCible.x][pCible.y] = e;
@@ -294,6 +293,37 @@ public class Jeu {
         }
     }
 
+    public boolean NewHighScore(){
+        boolean retour = false;
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("HighScore.txt", true));
+            writer.write(score + "\n");
+            writer.close();
+
+            retour = true;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return retour;
+    }
+
+    public boolean HighScore(){
+        boolean retour = false;
+        try{
+            BufferedReader reader = new BufferedReader(new FileReader("score.txt"));
+            String line = reader.readLine();
+            int highscore = Integer.parseInt(line);
+            if(score > highscore){
+                return NewHighScore();
+            }
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+        return retour;
+    }
+
     public boolean GameIsFinished(){
 
         if(bombe_restante <= 0){
@@ -301,11 +331,16 @@ public class Jeu {
 
             return true;
         }
-        if(nb_vie <= 0){
+        if(nb_vie <= 0) {
             System.out.println("Vous avez perdu !");
             System.out.println("Votre score est de : " + score);
+            if(HighScore()){
+                System.out.println("Nouveau HighScore ! : " + score);
+            }
+
             return true;
         }
+
 
         return false;
     }
