@@ -5,6 +5,7 @@
  */
 package modele.plateau;
 
+import VueControleur.VueControleurGyromite;
 import modele.deplacements.*;
 
 import java.io.*;
@@ -22,9 +23,9 @@ public class Jeu {
     public static final int SIZE_X = 28; // taille du plateau
     public static final int SIZE_Y = 18; // taille du plateau
 
-    private int bombe_restante;
+    public int bombe_restante = 0;
     public int nb_vie = 3;
-    private int score = 0;
+    public int score = 0;
 
     // compteur de déplacements horizontal et vertical (1 max par défaut, à chaque pas de temps)
     private HashMap<Entite, Integer> cmptDeplH = new HashMap<Entite, Integer>();
@@ -40,9 +41,11 @@ public class Jeu {
     // Tableau de sting qui contient le plateau de jeu
     private String[] prebuildmap = new String[SIZE_Y * SIZE_X];
 
+    private int nvCourant = 1;
 
-    public Jeu() {
-        initialisationDesEntites();
+
+    public Jeu() throws IOException{
+        LoadLevel();
     }
 
     public void resetCmptDepl() {
@@ -61,20 +64,32 @@ public class Jeu {
 
     public boolean BotSurCorde = false;
 
+    public void LoadLevel()
+    {
+        // on vide le tableau de string
+        prebuildmap = new String[SIZE_Y * SIZE_X];
+        // on charge le nouveau niveau
+        getStaticMap("mapLVL-" + nvCourant + ".txt");
+        initialisationDesEntites();
+
+    }
+
     private void initialisationDesEntites() {
         hector = new Heros(this);
-        addEntite(hector, 1, 1);
+        switch (nvCourant) {
+            case 1 -> addEntite(hector, 1, 1);
+            case 2 -> addEntite(hector, 7, 3);
+            case 3 -> addEntite(hector, 2, 2);
+        }
+
         Gravite g = new Gravite();
         g.addEntiteDynamique(hector);
         ordonnanceur.add(g);
 
-
         Controle4Directions.getInstance().addEntiteDynamique(hector);
-        ordonnanceur.add(ColonneDepl.getInstance());
         ordonnanceur.add(Controle4Directions.getInstance());
-        ordonnanceur.add(IA.getInstance());
 
-        getStaticMap();
+
         for (int i = 0; i < SIZE_Y; i++) {
             for (int j = 0; j < SIZE_X; j++) {
                 if (prebuildmap[i].charAt(j) == '1') {
@@ -97,13 +112,14 @@ public class Jeu {
                     Bot b = new Bot(this);
                     addEntite(b, j, i);
                     IA.getInstance().addEntiteDynamique(b);
+                    ordonnanceur.add(IA.getInstance());
 
                 }
                 else if (prebuildmap[i].charAt(j) == 'L'){
                     addEntite(new Liane(this), j, i);
                 }
                 else if (prebuildmap[i].charAt(j) == 'X') {
-                     Pilier pil = new Pilier(this);
+                    Pilier pil = new Pilier(this);
                     for(int k = 0; k < 3; k++)
                     {
                         Colonne elemCol = new Colonne(this);
@@ -113,11 +129,13 @@ public class Jeu {
                     }
                     ColonneDepl.getInstance().addEntiteDynamique(pil);
                     ordonnanceur.add(ColonneDepl.getInstance());
+
                 }
 
             }
 
         }
+        System.out.println("il y'a " + bombe_restante + " bombe(s) sur le plateau");
     }
 
     private void addEntite(Entite e, int x, int y) {
@@ -166,12 +184,19 @@ public class Jeu {
                 System.out.println("Smicks Ecrasé");
                 score += 50;
                 System.out.println("Score : " + score);
+                IA.getInstance().removeEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                 supprimerEntite(objetALaPosition(pCible));
             } else {
                 System.out.println("Collision avec un Smicks");
                 nb_vie--;
                 System.out.println("Il vous reste " + nb_vie + " vies");
             }
+        }
+        if(objetALaPosition(pCible) instanceof Heros && e instanceof Bot)
+        {
+            System.out.println("Collision avec un Heros");
+            nb_vie--;
+            System.out.println("Il vous reste " + nb_vie + " vies");
         }
         if (contenuDansGrille(pCible) && objetALaPosition(pCible) == null
                 || objetALaPosition(pCible).peutEtreRamasse() || objetALaPosition(pCible).peutPermettreDeMonterDescendre()) { // a adapter (collisions murs, etc.)
@@ -204,7 +229,6 @@ public class Jeu {
 
 
     private Point calculerPointCible(Point pCourant, Direction d) {
-
         return switch (d) {
             case haut -> new Point(pCourant.x, pCourant.y - 1);
             case bas -> new Point(pCourant.x, pCourant.y + 1);
@@ -239,6 +263,12 @@ public class Jeu {
                     grilleEntites[pCourant.x][pCourant.y] = new Liane(this); // on remet une Liane à la position précédente
                 }
                 BotSurCorde = true;
+            }
+            // si l'entite est le bot, si il y a le hero sur la position cible
+            else if (objetALaPosition(pCible) instanceof Heros && e instanceof Bot) {
+                grilleEntites[pCible.x][pCible.y] = e; // on déplace l'entité sur la Liane
+                map.put(e, pCible); // on met à jour la position de l'entité dans la map
+                map.put(objetALaPosition(pCible), pCourant); // on met à jour la position de l'entité dans la map
             }
             else {
                 grilleEntites[pCourant.x][pCourant.y] = null;
@@ -281,9 +311,9 @@ public class Jeu {
         return ordonnanceur;
     }
 
-    private void getStaticMap(){
+    private void getStaticMap(String FileName) {
         {
-            File myObj = new File("mapLVL1.txt");
+            File myObj = new File(FileName);
 
             try {
                 Scanner myReader = new Scanner(myObj);
@@ -331,14 +361,48 @@ public class Jeu {
         return retour;
     }
 
+    public void LevelFinished(){
+        if(nvCourant == 1)
+        {
+            System.out.println("Level " + nvCourant + "finished");
+        }
+        nvCourant++;
+        ordonnanceur.clear();
+        resetCmptDepl();
+        Controle4Directions.reset();
+        IA.reset();
+        ColonneDepl.reset();
+        // vide la grille d'entité
+        for (int i = 0; i < SIZE_X; i++) {
+            for (int j = 0; j < SIZE_Y; j++) {
+                grilleEntites[i][j] = null;
+            }
+        }
+        map.clear();
+
+        if(nvCourant > 3)
+        {
+            GameIsFinished();
+        }
+        LoadLevel();
+    }
+
+    public void ResetGame(){
+        nvCourant = 1;
+        score = 0;
+    }
+
     public boolean GameIsFinished(){
 
-        if(bombe_restante <= 0){
-            System.out.println("Vous avez gagné !");
-
+        if(bombe_restante <= 0 && nvCourant <= 3){
+            LevelFinished();
+            return false;
+        }
+        else if(bombe_restante <= 0 && nvCourant > 3){
+            System.out.println("Game finished");
             return true;
         }
-        if(nb_vie <= 0) {
+        else if(nb_vie <= 0) {
             System.out.println("Vous avez perdu !");
             System.out.println("Votre score est de : " + score);
             if(HighScore()){

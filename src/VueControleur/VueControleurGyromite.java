@@ -1,8 +1,7 @@
 package VueControleur;
 
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -55,12 +54,16 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     private JLabel[][] tabJLabel; // cases graphique (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
+    private JLabel[][] tabJLabelTilesEditor; // cases graphique pour tileseditor (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
+
     // Game state
     private int gameState;
     private int titleState = 0;
     private int playState = 1;
     private int scoreState = 2;
 
+    private JFrame menuPrincipal, TilesEditor;
+    private JPanel menu;
 
     public VueControleurGyromite(Jeu _jeu) {
         sizeX = jeu.SIZE_X;
@@ -82,6 +85,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     case KeyEvent.VK_DOWN : Controle4Directions.getInstance().setDirectionCourante(Direction.bas); break;
                     case KeyEvent.VK_UP : Controle4Directions.getInstance().setDirectionCourante(Direction.haut); break;
                     case KeyEvent.VK_Z : ColonneDepl.getInstance().setDirectionCourante(); break;
+
                 }
             }
         });
@@ -117,29 +121,140 @@ public class VueControleurGyromite extends JFrame implements Observer {
     }
 
     private void placerLesComposantsGraphiques() {
+
+        // ----------------------------------Menu Principal-------------------------------------------------------------
+        menuPrincipal = new JFrame();
+        menuPrincipal.setTitle("Gyromite-Menu");
+        menuPrincipal.setSize(800, 600);
+        menuPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JPanel panelMenuPrincipal = new JPanel();
+        panelMenuPrincipal.setLayout(new GridLayout(4, 1));
+        menuPrincipal.setResizable(false); //Rend inajustable la taille de la fenêtre
+        menuPrincipal.setLocationRelativeTo(null);// Centre le menu principal
+
+        // Ajout du titre
+        JLabel titre = new JLabel("Gyromite", SwingConstants.CENTER);
+        // tire plus jolie
+        titre.setFont(new Font("Arial", Font.BOLD, 50));
+        titre.setForeground(Color.BLACK);
+        titre.setOpaque(true);
+
+        panelMenuPrincipal.add(titre);
+
+
+        // Ajout du bouton Jouer
+        JButton boutonJouer = new JButton("Jouer");
+        boutonJouer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuPrincipal.setVisible(false);
+                // detruction du menu principal
+                menuPrincipal.dispose();
+                setVisible(true);
+            }
+        });
+        panelMenuPrincipal.add(boutonJouer);
+        // Bouton plus joli
+        boutonJouer.setBackground(Color.WHITE);
+        boutonJouer.setForeground(Color.BLACK);
+        boutonJouer.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonJouer.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonJouer.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonJouer.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonJouer.setBackground(Color.LIGHT_GRAY);
+                boutonJouer.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonJouer.setBackground(Color.WHITE);
+                boutonJouer.setForeground(Color.BLACK);
+            }
+        });
+        // Ajout du bouton TilesEditor
+        JButton boutonTilesEditor = new JButton("TilesEditor");
+        boutonTilesEditor.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuPrincipal.setVisible(false);
+                TilesEditor.setVisible(true);
+            }
+        });
+        panelMenuPrincipal.add(boutonTilesEditor);
+        // Bouton plus joli
+        boutonTilesEditor.setBackground(Color.WHITE);
+        boutonTilesEditor.setForeground(Color.BLACK);
+        boutonTilesEditor.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonTilesEditor.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonTilesEditor.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonTilesEditor.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonTilesEditor.setBackground(Color.LIGHT_GRAY);
+                boutonTilesEditor.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonTilesEditor.setBackground(Color.WHITE);
+                boutonTilesEditor.setForeground(Color.BLACK);
+            }
+        });
+
+        // Ajout du bouton quitter
+        JButton boutonQuitter = new JButton("Quitter");
+        boutonQuitter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+        panelMenuPrincipal.add(boutonQuitter);
+        // Bouton plus joli
+        boutonQuitter.setBackground(Color.WHITE);
+        boutonQuitter.setForeground(Color.BLACK);
+        boutonQuitter.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonQuitter.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonQuitter.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonQuitter.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonQuitter.setBackground(Color.LIGHT_GRAY);
+                boutonQuitter.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonQuitter.setBackground(Color.WHITE);
+                boutonQuitter.setForeground(Color.BLACK);
+            }
+        });
+
+        menuPrincipal.add(panelMenuPrincipal); // on ajoute le panel au menu principal
+
+        // ----------------------------------Fenêtre de Jeu-------------------------------------------------------------
         setTitle("Gyromite");
         setSize(1080, 720);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // permet de terminer l'application à la fermeture de la fenêtre
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null); // Centre la fenêtre
+        setResizable(false); //Rend inajustable la taille de la fenêtre
 
         // On place les composants graphiques
         JPanel panneauPrincipal = new JPanel();
         panneauPrincipal.setLayout(new BorderLayout());
         setContentPane(panneauPrincipal);
 
-        // On place le menu en haut
-        JPanel menu = new JPanel();
-        menu.setLayout(new GridLayout(2, 3));
+        // On place le menu d'infos en haut
+        menu = new JPanel();
+        menu.setLayout(new GridLayout(1, 3));
         panneauPrincipal.add(menu, BorderLayout.NORTH);
 
         // on place le le score, le nombre de vie et nombre de bombes dans le menu
-        JLabel score = new JLabel("Score : ");
-        JLabel vie = new JLabel("Vie : ");
-        JLabel bombes = new JLabel("Bombes : ");
-        menu.add(score);
-        menu.add(vie);
-        menu.add(bombes);
-
-
+        JLabel score = new JLabel("", SwingConstants.CENTER);
+        JLabel vie = new JLabel("", SwingConstants.CENTER);
+        JLabel bombes = new JLabel("", SwingConstants.CENTER);
+        menu.add(score, BorderLayout.WEST);
+        menu.add(vie, BorderLayout.CENTER);
+        menu.add(bombes, BorderLayout.EAST);
 
         JComponent grilleJLabels = new JPanel(new GridLayout(sizeY, sizeX)); // grilleJLabels va contenir les cases graphiques et les positionner sous la forme d'une grille
         tabJLabel = new JLabel[sizeX][sizeY];
@@ -154,6 +269,33 @@ public class VueControleurGyromite extends JFrame implements Observer {
         }
         panneauPrincipal.add(grilleJLabels, BorderLayout.CENTER);
 
+
+        // ----------------------------------Fenêtre TilesEditor--------------------------------------------------------
+        TilesEditor = new JFrame("TilesEditor");
+        TilesEditor.setSize(1080, 720);
+        TilesEditor.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        TilesEditor.setLocationRelativeTo(null); // Centre la fenêtre
+        TilesEditor.setResizable(false); //Rend inajustable la taille de la fenêtre
+
+        // On place les composants graphiques
+        JComponent grilleJLabelsTilesEditor = new JPanel(new GridLayout(sizeY, sizeX)); // grilleJLabels va contenir les cases graphiques et les positionner sous la forme d'une grille
+        tabJLabelTilesEditor = new JLabel[sizeX][sizeY];
+
+        for (int y = 0; y < sizeY; y++) {
+            for (int x = 0; x < sizeX; x++) {
+                JLabel jlab = new JLabel();
+
+                tabJLabelTilesEditor[x][y] = jlab; // on conserve les cases graphiques dans tabJLabel pour avoir un accès pratique à celles-ci (voir mettreAJourAffichage() )
+                grilleJLabelsTilesEditor.add(jlab);
+                jlab.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+            }
+        }
+
+        TilesEditor.add(grilleJLabelsTilesEditor);
+
+
+
     }
 
 
@@ -161,6 +303,9 @@ public class VueControleurGyromite extends JFrame implements Observer {
      * Il y a une grille du côté du modèle ( jeu.getGrille() ) et une grille du côté de la vue (tabJLabel)
      */
     private void mettreAJourAffichage() {
+        ((JLabel)menu.getComponent(0)).setText("Score : " + jeu.score); // on met à jour la label score
+        ((JLabel)menu.getComponent(1)).setText("Vie : " + jeu.nb_vie); // on met à jour la label vies
+        ((JLabel)menu.getComponent(2)).setText("Bombes : " + jeu.bombe_restante); // on met à jour la label bombes
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 if (jeu.getGrille()[x][y] instanceof Heros) { // si la grille du modèle contient un Pacman, on associe l'icône Pacman du côté de la vue
@@ -238,6 +383,9 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     }
 
+    public void AfficherMenu(){
+        menuPrincipal.setVisible(true);
+    }
 
     // chargement de l'image entière comme icone
     private ImageIcon chargerIcone(String urlIcone) {

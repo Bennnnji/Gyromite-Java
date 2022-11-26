@@ -15,6 +15,9 @@ public class Ordonnanceur extends Observable implements Runnable {
         lstDeplacements.add(deplacement);
     }
 
+    public void clear() {
+        lstDeplacements.clear();
+    }
     public Ordonnanceur(Jeu _jeu) {
         jeu = _jeu;
     }

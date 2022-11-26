@@ -21,6 +21,11 @@ public class Controle4Directions extends RealisateurDeDeplacement {
         return c3d;
     }
 
+    public static void  reset()
+    {
+        c3d = new Controle4Directions();
+    }
+
     public static Direction getDirectionPrecedente() {
         return directionPrecedente;
     }
