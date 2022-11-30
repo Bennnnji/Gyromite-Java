@@ -8,7 +8,6 @@ import modele.deplacements.Direction;
  * Représente une colonne entiere formee de plusieurs blocs
  */
 public class Pilier extends EntiteDynamique {
-
     public static final int TAILLE_COLONNE = 3; // les colonnes ont une hauteur de 3
 
     public Pilier(Jeu _jeu) {
@@ -67,6 +66,11 @@ public class Pilier extends EntiteDynamique {
     public boolean peutServirDeSupport() { return true; }
     public boolean peutPermettreDeMonterDescendre() { return false; };
     public boolean peutEtreRamasse() {
+        return false;
+    }
+
+    @Override
+    public boolean peutEtreTraversee() {
         return false;
     }
 }

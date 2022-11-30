@@ -110,9 +110,10 @@ public class Jeu {
                 }
                 else if (prebuildmap[i].charAt(j) == 'M') {
                     Bot b = new Bot(this);
+                    IA newIa = new IA();
                     addEntite(b, j, i);
-                    IA.getInstance().addEntiteDynamique(b);
-                    ordonnanceur.add(IA.getInstance());
+                    newIa.getInstance().addEntiteDynamique(b);
+                    ordonnanceur.add(newIa.getInstance());
 
                 }
                 else if (prebuildmap[i].charAt(j) == 'L'){
@@ -130,6 +131,18 @@ public class Jeu {
                     ColonneDepl.getInstance().addEntiteDynamique(pil);
                     ordonnanceur.add(ColonneDepl.getInstance());
 
+                }
+                else if(prebuildmap[i].charAt(j) == 'Y')
+                {
+                    Pilier pil = new Pilier(this);
+                    for(int k = 0; k < 3 ; k++)
+                    {
+                        Colonne elemCol = new Colonne(this);
+                        addEntite(elemCol,j,i-k);
+                        pil.addColonne(elemCol);
+                    }
+                    ColonneDeplB.getInstance().addEntiteDynamique(pil);
+                    ordonnanceur.add(ColonneDeplB.getInstance());
                 }
 
             }

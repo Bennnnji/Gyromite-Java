@@ -11,7 +11,6 @@ import java.util.Random;
  * Ennemis (Smicks)
  */
 public class Bot extends EntiteDynamique {
-    private Random r = new Random();
 
     public Bot(Jeu _jeu) {
         super(_jeu);
@@ -22,4 +21,9 @@ public class Bot extends EntiteDynamique {
     public boolean peutPermettreDeMonterDescendre() { return false; };
 
     public boolean peutEtreRamasse() { return false; }
+
+    @Override
+    public boolean peutEtreTraversee() {
+        return false;
+    }
 }

@@ -13,6 +13,7 @@ import javax.imageio.ImageIO;
 import javax.naming.ldap.Control;
 import javax.swing.*;
 
+import modele.deplacements.ColonneDeplB;
 import modele.deplacements.Controle4Directions;
 import modele.deplacements.Direction;
 import modele.deplacements.ColonneDepl;
@@ -85,6 +86,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     case KeyEvent.VK_DOWN : Controle4Directions.getInstance().setDirectionCourante(Direction.bas); break;
                     case KeyEvent.VK_UP : Controle4Directions.getInstance().setDirectionCourante(Direction.haut); break;
                     case KeyEvent.VK_Z : ColonneDepl.getInstance().setDirectionCourante(); break;
+                    case KeyEvent.VK_A : ColonneDeplB.getInstance().setDirectionCourante(); break;
 
                 }
             }

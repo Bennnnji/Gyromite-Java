@@ -12,4 +12,9 @@ public abstract class EntiteStatique extends Entite {
     public boolean peutServirDeSupport() { return true; }
     public boolean peutPermettreDeMonterDescendre() { return false; }
     public boolean peutEtreRamasse() { return false; }
+
+    @Override
+    public boolean peutEtreTraversee() {
+        return false;
+    }
 }

@@ -1,61 +1,88 @@
 package modele.deplacements;
-
-import modele.plateau.Entite;
 import modele.plateau.EntiteDynamique;
 
 public class IA extends RealisateurDeDeplacement {
+    public static Object getListeEntitesDynamiques;
+    private Direction directionCourante = Direction.droite;
+    private Direction directionPrecedente = this.directionCourante;
 
-    private Direction directionCourante;
-    // Design pattern singleton
     private static IA ia;
 
-    private boolean alreadyChoose = false;
-    public boolean realiserDeplacement() {
-        boolean ret = false;
-        for (EntiteDynamique e : lstEntitesDynamiques) {
-            Entite eBas = e.regarderDansLaDirection(Direction.bas);
-            Entite eHaut = e.regarderDansLaDirection(Direction.haut);
-            Entite eGauche = e.regarderDansLaDirection(Direction.gauche);
-            Entite eDroite = e.regarderDansLaDirection(Direction.droite);
-            if (eGauche == null && eBas != null && eBas.peutServirDeSupport() && !alreadyChoose) {
-                if (e.avancerDirectionChoisie(Direction.gauche))
-                    ret = true;
-                alreadyChoose = true;
-            }
-            else alreadyChoose = false;
-            if (eDroite == null && eBas != null && eBas.peutServirDeSupport() && !alreadyChoose) {
-                if (e.avancerDirectionChoisie(Direction.droite))
-                    ret = true;
-                alreadyChoose = true;
-            }
-            else alreadyChoose = false;
-            if (eBas != null && eBas.peutPermettreDeMonterDescendre() && !alreadyChoose) {
-                if (e.avancerDirectionChoisie(Direction.haut))
-                    ret = true;
-                alreadyChoose = true;
-            }
-            if(eHaut != null && eHaut.peutPermettreDeMonterDescendre() && !alreadyChoose) {
-                if(e.avancerDirectionChoisie(Direction.haut))
-                    ret = true;
-                alreadyChoose = true;
-            }
-        }
-        return ret;
+    public void setDirectionCourante(Direction _directionCourante) {
+
+        directionCourante = _directionCourante;
+    }
+
+    public IA(){
 
     }
 
-    public static IA getInstance() {
+    public boolean peutAvancer(EntiteDynamique e){
+        // test si le bot fait face à un objet qui infranchissable
+        //      si
+        if((e.regarderDansLaDirection(directionCourante) != null && !e.regarderDansLaDirection(directionCourante).peutEtreTraversee()) ||
+                (e.regarderDansLaDirection(Direction.bas) != null && e.regarderDansLaDirection(Direction.bas).peutServirDeSupport() && e.regarderDansLaDirection(Direction.bas).regarderDansLaDirection(directionCourante) == null)
+            /*|| (directionEchelle != null && e.regarderDansLaDirection(Direction.bas) instanceof Echelle)*/){
+            return false;
+        }
+        return true;
+    }
+
+    public static IA getInstance()
+    {
         if (ia == null) {
             ia = new IA();
         }
         return ia;
     }
 
-    public static void  reset()
-    {
+    public static IA reset() {
         ia = new IA();
+        return ia;
     }
+    protected boolean realiserDeplacement() {
+        boolean ret = false;
+        for (EntiteDynamique e : lstEntitesDynamiques) {
+            if (directionCourante != null){
+                if(e.regarderDansLaDirection(directionCourante) != null && !e.regarderDansLaDirection(directionCourante).peutEtreTraversee() ||
+                        (e.regarderDansLaDirection(Direction.bas) != null && !(e.regarderDansLaDirection(Direction.bas).peutPermettreDeMonterDescendre()) && e.regarderDansLaDirection(Direction.bas).peutServirDeSupport() && e.regarderDansLaDirection(Direction.bas).regarderDansLaDirection(directionCourante) == null )){
+
+                    reverseDirection();
+                }
+
+                if (e.regarderDansLaDirection(Direction.haut) != null && e.regarderDansLaDirection(Direction.haut).peutPermettreDeMonterDescendre() && directionCourante != Direction.bas) {
+                    if (directionCourante != Direction.haut) {
+                        directionPrecedente = directionCourante;
+                    }
+                    directionCourante = Direction.haut;
+                }
+                else if (e.regarderDansLaDirection(Direction.bas) != null &&e.regarderDansLaDirection(Direction.bas).peutPermettreDeMonterDescendre() && directionCourante != Direction.haut) {
+                    if (directionCourante != Direction.bas) {
+                        directionPrecedente = directionCourante;
+                    }
+                    directionCourante = Direction.bas;
+                }
+                else if(directionCourante == Direction.bas || directionCourante == Direction.haut){
+                    directionCourante = directionPrecedente;
+                }
+                /*else*/ if(e.avancerDirectionChoisie(directionCourante)) { ret = true;}
+
+            }
+        }
+        return ret;
+    }
+
     public void resetDirection() {
         directionCourante = null;
     }
+
+    public void reverseDirection(){
+        switch(directionCourante){
+            case droite: directionCourante = Direction.gauche; break;
+            case gauche: directionCourante = Direction.droite; break;
+            default:
+                break;
+        }
+    }
 }
+

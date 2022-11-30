@@ -5,5 +5,7 @@ public class Liane extends EntiteStatique {
     public boolean peutServirDeSupport() { return true; }
     public boolean peutPermettreDeMonterDescendre() { return true; };
 
+
+
 }
 
