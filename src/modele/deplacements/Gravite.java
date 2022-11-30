@@ -18,4 +18,5 @@ public class Gravite extends RealisateurDeDeplacement {
 
         return ret;
     }
+
 }

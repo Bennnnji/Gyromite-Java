@@ -27,11 +27,13 @@ public class Ordonnanceur extends Observable implements Runnable {
         new Thread(this).start();
     }
 
+
+
     @Override
     public void run() {
         boolean update = false;
 
-        while(!jeu.GameIsFinished()) {
+        while(jeu.GameIsFinished() == 0) {
             jeu.resetCmptDepl();
             for (RealisateurDeDeplacement d : lstDeplacements) {
                 if (d.realiserDeplacement())

@@ -19,6 +19,7 @@ public class Heros extends EntiteDynamique {
 
     public boolean peutEtreRamasse() { return false; }
 
+    public boolean estEnnemi() { return false; }
     @Override
     public boolean peutEtreTraversee() {
         return false;

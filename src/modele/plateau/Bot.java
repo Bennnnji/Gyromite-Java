@@ -22,6 +22,8 @@ public class Bot extends EntiteDynamique {
 
     public boolean peutEtreRamasse() { return false; }
 
+    public boolean estEnnemi() { return true; }
+
     @Override
     public boolean peutEtreTraversee() {
         return false;

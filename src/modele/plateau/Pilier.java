@@ -12,16 +12,16 @@ public class Pilier extends EntiteDynamique {
 
     public Pilier(Jeu _jeu) {
         super(_jeu);
-        composantes = new ArrayList<Colonne>();
+        composantes = new ArrayList<Colonnes>();
     }
 
-    public ArrayList<Colonne> composantes;
+    public ArrayList<Colonnes> composantes;
 
     /**
      * Ajoute un element colonne au bloc
      * @param c un element colonne
      */
-    public void addColonne(Colonne c) {
+    public void addColonne(Colonnes c) {
         composantes.add(c);
     }
 
@@ -68,6 +68,10 @@ public class Pilier extends EntiteDynamique {
     public boolean peutEtreRamasse() {
         return false;
     }
+
+    public boolean estEnnemi() { return false; }
+
+    public boolean estPilier() { return true; }
 
     @Override
     public boolean peutEtreTraversee() {

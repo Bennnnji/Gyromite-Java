@@ -35,8 +35,9 @@ public class VueControleurGyromite extends JFrame implements Observer {
     private ImageIcon icoHero;
     private ImageIcon icoHeroDroite;
     private ImageIcon icoHeroGauche;
-
     private ImageIcon icoHeroGrimpe;
+
+    private ImageIcon icoHeroPerdVie;
 
     private ImageIcon icoBot;
     private ImageIcon icoVide;
@@ -52,6 +53,8 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     private ImageIcon icoSupportColonne;
     private ImageIcon icoColonne;
+
+    private ImageIcon icoColonneR;
 
     private JLabel[][] tabJLabel; // cases graphique (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
@@ -99,14 +102,17 @@ public class VueControleurGyromite extends JFrame implements Observer {
         icoHeroGauche = chargerIcone("Images/player.png", 0, 0, 32, 44);
         icoHeroDroite = chargerIcone("Images/player-2.png", 160, 0, 32, 44);
         icoHeroGrimpe = chargerIcone("Images/player.png", 0, 88, 32, 44);
+        icoHeroPerdVie = chargerIcone("Images/player.png", 0, 115, 32, 38);
 
 
 
-        icoBot = chargerIcone("Images/smick.png", 0, 0, 20, 20);//chargerIcone("Images/Pacman.png");
+        icoBot = chargerIcone("Images/smick.png", 0, 0, 32, 32);//chargerIcone("Images/Pacman.png");
 
         icoVide = chargerIcone("Images/tileset.png", 64, 0, 16, 14);
 
-        icoColonne = chargerIcone("Images/Colonne.png", 0, 0, 16, 16);
+        icoColonne = chargerIcone("Images/tileset.png", 16, 48, 16, 16);
+
+        icoColonneR = chargerIcone("Images/tileset.png", 16, 80, 16, 16);
 
         icoMurHorizontal = chargerIcone("Images/tileset.png", 0, 1, 16 ,14);
 
@@ -264,7 +270,6 @@ public class VueControleurGyromite extends JFrame implements Observer {
         for (int y = 0; y < sizeY; y++) {
             for (int x = 0; x < sizeX; x++) {
                 JLabel jlab = new JLabel();
-
                 tabJLabel[x][y] = jlab; // on conserve les cases graphiques dans tabJLabel pour avoir un accès pratique à celles-ci (voir mettreAJourAffichage() )
                 grilleJLabels.add(jlab);
             }
@@ -274,29 +279,43 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
         // ----------------------------------Fenêtre TilesEditor--------------------------------------------------------
         TilesEditor = new JFrame("TilesEditor");
-        TilesEditor.setSize(1080, 720);
+        TilesEditor.setSize(1280, 720);
         TilesEditor.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         TilesEditor.setLocationRelativeTo(null); // Centre la fenêtre
         TilesEditor.setResizable(false); //Rend inajustable la taille de la fenêtre
 
         // On place les composants graphiques
         JComponent grilleJLabelsTilesEditor = new JPanel(new GridLayout(sizeY, sizeX)); // grilleJLabels va contenir les cases graphiques et les positionner sous la forme d'une grille
-        tabJLabelTilesEditor = new JLabel[sizeX][sizeY];
+        tabJLabelTilesEditor = new CaseTileEditor[sizeX][sizeY];
 
         for (int y = 0; y < sizeY; y++) {
             for (int x = 0; x < sizeX; x++) {
-                JLabel jlab = new JLabel();
-
+                CaseTileEditor jlab = new CaseTileEditor(x,y);
                 tabJLabelTilesEditor[x][y] = jlab; // on conserve les cases graphiques dans tabJLabel pour avoir un accès pratique à celles-ci (voir mettreAJourAffichage() )
-                grilleJLabelsTilesEditor.add(jlab);
                 jlab.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                grilleJLabelsTilesEditor.add(jlab);
 
             }
         }
 
-        TilesEditor.add(grilleJLabelsTilesEditor);
+        TilesEditor.add(grilleJLabelsTilesEditor, BorderLayout.CENTER);
 
+        // Ajout d'un menu a droite de la fenetre pour choisir les tiles
+        JPanel panelTilesEditor = new JPanel();
+        panelTilesEditor.setLayout(new GridLayout(10, 1));
+        // Ajout du bouton quitter
+        JButton boutonQuitterTilesEditor = new JButton("Quitter");
+        boutonQuitterTilesEditor.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TilesEditor.setVisible(false);
 
+                menuPrincipal.setVisible(true);
+            }
+        });
+        panelTilesEditor.add(boutonQuitterTilesEditor);
+
+        TilesEditor.add(panelTilesEditor, BorderLayout.EAST);
 
     }
 
@@ -310,53 +329,49 @@ public class VueControleurGyromite extends JFrame implements Observer {
         ((JLabel)menu.getComponent(2)).setText("Bombes : " + jeu.bombe_restante); // on met à jour la label bombes
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
-                if (jeu.getGrille()[x][y] instanceof Heros) { // si la grille du modèle contient un Pacman, on associe l'icône Pacman du côté de la vue
+                if (jeu.getGrille()[x][y][1] instanceof Heros) { // si la grille du modèle contient un Pacman, on associe l'icône Pacman du côté de la vue
 
                     Direction dir = Controle4Directions.getDirectionPrecedente(); // on récupère la direction précédente du heros
 
-                    if(jeu.HeroSurCorde)
+                    if(jeu.getHeroSurCorde())
                     {
                         tabJLabel[x][y].setIcon(icoHeroGrimpe);
                     }
-                    else
-                    {
-                        // on associe l'icône correspondant à la direction précédente
-                        if (dir == Direction.gauche) {
-                            tabJLabel[x][y].setIcon(icoHeroGauche);
-                        }
-                        else if (dir == Direction.droite) {
-                            tabJLabel[x][y].setIcon(icoHeroDroite);
-                        }
-                        else {
-                            tabJLabel[x][y].setIcon(icoHero);
-                        }
+                    else if (dir == Direction.gauche) {
+                        tabJLabel[x][y].setIcon(icoHeroGauche);
+                    }
+                    else if (dir == Direction.droite) {
+                        tabJLabel[x][y].setIcon(icoHeroDroite);
+                    }
+                    else if(jeu.getHeroPerdVie()) {
+                        tabJLabel[x][y].setIcon(icoHeroPerdVie);
+                    }
+                    else {
+                        tabJLabel[x][y].setIcon(icoHero);
                     }
 
-
-                    // si transparence : images avec canal alpha + dessins manuels (voir ci-dessous + créer composant qui redéfinie paint(Graphics g)), se documenter
-                    //BufferedImage bi = getImage("Images/smick.png", 0, 0, 20, 20);
-                    //tabJLabel[x][y].getGraphics().drawImage(bi, 0, 0, null);
-
-                } else if (jeu.getGrille()[x][y] instanceof Bot) {
+                } else if (jeu.getGrille()[x][y][1] instanceof Bot) {
                     tabJLabel[x][y].setIcon(icoBot);
 
-                } else if (jeu.getGrille()[x][y] instanceof Mur) {
+                } else if (jeu.getGrille()[x][y][0] instanceof Mur) {
                     tabJLabel[x][y].setIcon(icoMurHorizontal);
-                } else if (jeu.getGrille()[x][y] instanceof MurVertical) {
+                } else if (jeu.getGrille()[x][y][0] instanceof MurVertical) {
                     tabJLabel[x][y].setIcon(icoMurVertical);
-                } else if (jeu.getGrille()[x][y] instanceof MurBrique) {
+                } else if (jeu.getGrille()[x][y][0] instanceof MurBrique) {
                     tabJLabel[x][y].setIcon(icoMurBrique);
-                } else if (jeu.getGrille()[x][y] instanceof Colonne) {
-                    tabJLabel[x][y].setIcon(icoColonne);
-                } else if (jeu.getGrille()[x][y] instanceof SupportColonne) {
+                } else if (jeu.getGrille()[x][y][0] instanceof SupportColonne) {
                     tabJLabel[x][y].setIcon(icoSupportColonne);
-                } else if (jeu.getGrille()[x][y] instanceof Liane) {
+                } else if (jeu.getGrille()[x][y][0] instanceof Liane) {
                     tabJLabel[x][y].setIcon(icoLiane);
-                } else if (jeu.getGrille()[x][y] instanceof Bombe) {
+                } else if (jeu.getGrille()[x][y][0] instanceof Bombe) {
                     tabJLabel[x][y].setIcon(icoBombe);
-                } else if (jeu.getGrille()[x][y] instanceof Colonne) {
+                } else if (jeu.getGrille()[x][y][1] instanceof Colonne) {
                     tabJLabel[x][y].setIcon(icoColonne);
-                } else {
+                }
+                else if (jeu.getGrille()[x][y][1] instanceof ColonneR) {
+                    tabJLabel[x][y].setIcon(icoColonneR);
+                }
+                    else {
                     tabJLabel[x][y].setIcon(icoVide);
                 }
             }
@@ -365,9 +380,14 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        if(jeu.GameIsFinished())
+        if(jeu.GameIsFinished() == 1)
         {
             JOptionPane.showMessageDialog(this, "Game Over");
+            System.exit(0);
+        }
+        else if (jeu.GameIsFinished() == 2)
+        {
+            JOptionPane.showMessageDialog(this, "You Win");
             System.exit(0);
         }
         else

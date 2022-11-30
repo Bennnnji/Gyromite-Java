@@ -1,16 +1,7 @@
 package modele.plateau;
 
-public class Colonne extends EntiteDynamique {
-    public Colonne(Jeu _jeu) { super(_jeu); }
-
-    public boolean peutEtreEcrase() { return false; }
-    public boolean peutServirDeSupport() { return true; }
-    public boolean peutPermettreDeMonterDescendre() { return false; };
-
-    public boolean peutEtreRamasse() { return false; }
-
-    @Override
-    public boolean peutEtreTraversee() {
-        return false;
+public class Colonne extends Colonnes {
+    public Colonne(Jeu _jeu) {
+        super(_jeu);
     }
 }

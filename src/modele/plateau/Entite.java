@@ -20,7 +20,10 @@ public abstract class Entite {
 
     public abstract boolean peutEtreRamasse(); // l'entité peut être ramassée (par exemple par un personnage)
 
+    public abstract boolean estEnnemi(); // l'entité est un ennemi (par exemple un fantôme)
     public abstract boolean peutEtreTraversee();
+
+    public abstract boolean estPilier();
 
     public Object regarderDansLaDirection(Direction d) {
         return jeu.regarderDansLaDirection(this, d);

@@ -5,6 +5,7 @@ public class Bombe extends EntiteStatique {
     public boolean peutServirDeSupport() { return false; }
     public boolean peutEtreRamasse() { return true; }
 
+    public boolean estEnnemi() { return false; }
     @Override
     public boolean peutEtreTraversee() {
         return false;
