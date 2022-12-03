@@ -5,6 +5,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.logging.Level;
@@ -24,7 +25,7 @@ import modele.plateau.*;
  */
 public class VueControleurGyromite extends JFrame implements Observer {
     private Jeu jeu; // référence sur une classe de modèle : permet d'accéder aux données du modèle pour le rafraichissement, permet de communiquer les actions clavier (ou souris)
-
+    private static TileEditor tileEditor;
     private int sizeX; // taille de la grille affichée
     private int sizeY;
 
@@ -34,46 +35,35 @@ public class VueControleurGyromite extends JFrame implements Observer {
     private ImageIcon icoHeroGauche;
     private ImageIcon icoHeroGrimpe;
 
-    private ImageIcon icoHeroHaut;
-
-    private ImageIcon icoBot;
     private ImageIcon icoBotDroite;
     private ImageIcon icoBotGauche;
     private ImageIcon icoBotGrimpe;
 
     private ImageIcon icoVide;
     private ImageIcon icoMurHorizontal;
-
     private ImageIcon icoMurVertical;
-
     private ImageIcon icoMurBrique;
-
     private ImageIcon icoBombe;
-
     private ImageIcon icoLiane;
-
     private ImageIcon icoSupportColonne;
     private ImageIcon icoColonne;
-
     private ImageIcon icoColonneR;
 
     private JLabel[][] tabJLabel; // cases graphique (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
     private JLabel[][] tabJLabelTilesEditor; // cases graphique pour tileseditor (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
-    // Game state
-    private int gameState;
-    private int titleState = 0;
-    private int playState = 1;
-    private int scoreState = 2;
+    private JLabel[][] tabChoiceTilesEditor; // cases graphique pour tileseditor (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
     private JFrame menuPrincipal, TilesEditor;
     private JPanel menu;
 
-    public VueControleurGyromite(Jeu _jeu) {
+    public VueControleurGyromite(Jeu _jeu, TileEditor _tileEditor) {
         sizeX = jeu.SIZE_X;
         sizeY = _jeu.SIZE_Y;
         jeu = _jeu;
+        tileEditor = _tileEditor;
+
 
         chargerLesIcones();
         placerLesComposantsGraphiques();
@@ -84,14 +74,13 @@ public class VueControleurGyromite extends JFrame implements Observer {
         addKeyListener(new KeyAdapter() { // new KeyAdapter() { ... } est une instance de classe anonyme, il s'agit d'un objet qui correspond au controleur dans MVC
             @Override
             public void keyPressed(KeyEvent e) {
-                switch(e.getKeyCode()) {  // on regarde quelle touche a été pressée
-                    case KeyEvent.VK_LEFT : Controle4Directions.getInstance().setDirectionCourante(Direction.gauche); break;
-                    case KeyEvent.VK_RIGHT : Controle4Directions.getInstance().setDirectionCourante(Direction.droite); break;
-                    case KeyEvent.VK_DOWN : Controle4Directions.getInstance().setDirectionCourante(Direction.bas); break;
-                    case KeyEvent.VK_UP : Controle4Directions.getInstance().setDirectionCourante(Direction.haut); break;
-                    case KeyEvent.VK_Z : ColonneDepl.getInstance().setDirectionCourante(); break;
-                    case KeyEvent.VK_A : ColonneDeplB.getInstance().setDirectionCourante(); break;
-
+                switch (e.getKeyCode()) {  // on regarde quelle touche a été pressée
+                    case KeyEvent.VK_LEFT -> Controle4Directions.getInstance().setDirectionCourante(Direction.gauche);
+                    case KeyEvent.VK_RIGHT -> Controle4Directions.getInstance().setDirectionCourante(Direction.droite);
+                    case KeyEvent.VK_DOWN -> Controle4Directions.getInstance().setDirectionCourante(Direction.bas);
+                    case KeyEvent.VK_UP -> Controle4Directions.getInstance().setDirectionCourante(Direction.haut);
+                    case KeyEvent.VK_Z -> ColonneDepl.getInstance().setDirectionCourante();
+                    case KeyEvent.VK_A -> ColonneDeplB.getInstance().setDirectionCourante();
                 }
             }
         });
@@ -103,9 +92,6 @@ public class VueControleurGyromite extends JFrame implements Observer {
         icoHeroGauche = chargerIcone("Images/player.png", 0, 0, 32, 38);
         icoHeroDroite = chargerIcone("Images/player-2.png", 160, 0, 32, 38);
         icoHeroGrimpe = chargerIcone("Images/player.png", 0, 88, 32, 38);
-        icoHeroHaut = chargerIcone("Images/player.png", 160, 45, 32, 38);
-
-
 
         icoBotGauche = chargerIcone("Images/smick.png", 0, 0, 32, 32);
         icoBotDroite = chargerIcone("Images/smick-2.png", 96, 0, 32, 32);
@@ -135,113 +121,8 @@ public class VueControleurGyromite extends JFrame implements Observer {
     private void placerLesComposantsGraphiques() {
 
         // ----------------------------------Menu Principal-------------------------------------------------------------
-        menuPrincipal = new JFrame();
-        menuPrincipal.setTitle("Gyromite-Menu");
-        menuPrincipal.setSize(800, 600);
-        menuPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JPanel panelMenuPrincipal = new JPanel();
-        panelMenuPrincipal.setLayout(new GridLayout(4, 1));
-        menuPrincipal.setResizable(false); //Rend inajustable la taille de la fenêtre
-        menuPrincipal.setLocationRelativeTo(null);// Centre le menu principal
 
-        // Ajout du titre
-        JLabel titre = new JLabel("Gyromite", SwingConstants.CENTER);
-        // tire plus jolie
-        titre.setFont(new Font("Arial", Font.BOLD, 50));
-        titre.setForeground(Color.BLACK);
-        titre.setOpaque(true);
-
-        panelMenuPrincipal.add(titre);
-
-
-        // Ajout du bouton Jouer
-        JButton boutonJouer = new JButton("Jouer");
-        boutonJouer.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                menuPrincipal.setVisible(false);
-                // detruction du menu principal
-                menuPrincipal.dispose();
-                setVisible(true);
-            }
-        });
-        panelMenuPrincipal.add(boutonJouer);
-        // Bouton plus joli
-        boutonJouer.setBackground(Color.WHITE);
-        boutonJouer.setForeground(Color.BLACK);
-        boutonJouer.setFont(new Font("Arial", Font.BOLD, 20));
-        boutonJouer.setFocusable(false); // Enlève le contour bleu autour du bouton
-        boutonJouer.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
-        //ajout d'un hover sur le bouton
-        boutonJouer.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                boutonJouer.setBackground(Color.LIGHT_GRAY);
-                boutonJouer.setForeground(Color.WHITE);
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                boutonJouer.setBackground(Color.WHITE);
-                boutonJouer.setForeground(Color.BLACK);
-            }
-        });
-        // Ajout du bouton TilesEditor
-        JButton boutonTilesEditor = new JButton("TilesEditor");
-        boutonTilesEditor.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                menuPrincipal.setVisible(false);
-                TilesEditor.setVisible(true);
-            }
-        });
-        panelMenuPrincipal.add(boutonTilesEditor);
-        // Bouton plus joli
-        boutonTilesEditor.setBackground(Color.WHITE);
-        boutonTilesEditor.setForeground(Color.BLACK);
-        boutonTilesEditor.setFont(new Font("Arial", Font.BOLD, 20));
-        boutonTilesEditor.setFocusable(false); // Enlève le contour bleu autour du bouton
-        boutonTilesEditor.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
-        //ajout d'un hover sur le bouton
-        boutonTilesEditor.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                boutonTilesEditor.setBackground(Color.LIGHT_GRAY);
-                boutonTilesEditor.setForeground(Color.WHITE);
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                boutonTilesEditor.setBackground(Color.WHITE);
-                boutonTilesEditor.setForeground(Color.BLACK);
-            }
-        });
-
-        // Ajout du bouton quitter
-        JButton boutonQuitter = new JButton("Quitter");
-        boutonQuitter.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-        panelMenuPrincipal.add(boutonQuitter);
-        // Bouton plus joli
-        boutonQuitter.setBackground(Color.WHITE);
-        boutonQuitter.setForeground(Color.BLACK);
-        boutonQuitter.setFont(new Font("Arial", Font.BOLD, 20));
-        boutonQuitter.setFocusable(false); // Enlève le contour bleu autour du bouton
-        boutonQuitter.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
-        //ajout d'un hover sur le bouton
-        boutonQuitter.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                boutonQuitter.setBackground(Color.LIGHT_GRAY);
-                boutonQuitter.setForeground(Color.WHITE);
-            }
-
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                boutonQuitter.setBackground(Color.WHITE);
-                boutonQuitter.setForeground(Color.BLACK);
-            }
-        });
-
-        menuPrincipal.add(panelMenuPrincipal); // on ajoute le panel au menu principal
+        PlacerComposantGraphiqueMenuPrincipale();
 
         // ----------------------------------Fenêtre de Jeu-------------------------------------------------------------
         setTitle("Gyromite");
@@ -282,47 +163,305 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
 
         // ----------------------------------Fenêtre TilesEditor--------------------------------------------------------
+
+        PlacerComposantGraphiqueTileEditor();
+
+    }
+
+    public void PlacerComposantGraphiqueMenuPrincipale()
+    {
+        menuPrincipal = new JFrame();
+        menuPrincipal.setTitle("Gyromite-Menu");
+        menuPrincipal.setSize(800, 600);
+        menuPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JPanel panelMenuPrincipal = new JPanel();
+        panelMenuPrincipal.setLayout(new GridLayout(4, 1));
+        menuPrincipal.setResizable(false); //Rend inajustable la taille de la fenêtre
+        menuPrincipal.setLocationRelativeTo(null);// Centre le menu principal
+
+        // Ajout du titre
+        JLabel titre = new JLabel("Gyromite", SwingConstants.CENTER);
+        // titre plus jolie
+        titre.setFont(new Font("Arial", Font.BOLD, 50));
+        titre.setForeground(Color.BLACK);
+        titre.setOpaque(true);
+
+        panelMenuPrincipal.add(titre);
+
+
+        //----------------------------------------Bouton Jouer----------------------------------------------------------
+
+        JButton boutonJouer = new JButton("Jouer");
+        boutonJouer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuPrincipal.dispose(); // on ferme la fenêtre
+                setVisible(true); // on affiche la fenêtre de jeu
+            }
+        });
+        panelMenuPrincipal.add(boutonJouer);
+
+        // Bouton plus joli
+        boutonJouer.setBackground(Color.WHITE);
+        boutonJouer.setForeground(Color.BLACK);
+        boutonJouer.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonJouer.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonJouer.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonJouer.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonJouer.setBackground(Color.LIGHT_GRAY);
+                boutonJouer.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonJouer.setBackground(Color.WHITE);
+                boutonJouer.setForeground(Color.BLACK);
+            }
+        });
+        // -----------------------------------Bouton TilesEditor -------------------------------------------------------
+
+        JButton boutonTilesEditor = new JButton("TilesEditor");
+        boutonTilesEditor.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuPrincipal.setVisible(false); // sinon bug avec le hover
+                TilesEditor.setVisible(true);
+            }
+        });
+        panelMenuPrincipal.add(boutonTilesEditor);
+        // Bouton plus joli
+        boutonTilesEditor.setBackground(Color.WHITE);
+        boutonTilesEditor.setForeground(Color.BLACK);
+        boutonTilesEditor.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonTilesEditor.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonTilesEditor.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonTilesEditor.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonTilesEditor.setBackground(Color.LIGHT_GRAY);
+                boutonTilesEditor.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonTilesEditor.setBackground(Color.WHITE);
+                boutonTilesEditor.setForeground(Color.BLACK);
+            }
+        });
+
+        // ------------------------------------- Bouton Quitter --------------------------------------------------------
+
+        JButton boutonQuitter = new JButton("Quitter");
+        boutonQuitter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+        panelMenuPrincipal.add(boutonQuitter);
+
+        // Bouton plus joli
+        boutonQuitter.setBackground(Color.WHITE);
+        boutonQuitter.setForeground(Color.BLACK);
+        boutonQuitter.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonQuitter.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonQuitter.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+
+        //ajout d'un hover sur le bouton
+        boutonQuitter.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonQuitter.setBackground(Color.LIGHT_GRAY);
+                boutonQuitter.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonQuitter.setBackground(Color.WHITE);
+                boutonQuitter.setForeground(Color.BLACK);
+            }
+        });
+
+        menuPrincipal.add(panelMenuPrincipal); // on ajoute le panel au menu principal
+
+    }
+
+    public void PlacerComposantGraphiqueTileEditor()
+    {
         TilesEditor = new JFrame("TilesEditor");
         TilesEditor.setSize(1280, 720);
         TilesEditor.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         TilesEditor.setLocationRelativeTo(null); // Centre la fenêtre
         TilesEditor.setResizable(false); //Rend inajustable la taille de la fenêtre
 
-        // On place les composants graphiques
-        JComponent grilleJLabelsTilesEditor = new JPanel(new GridLayout(sizeY, sizeX)); // grilleJLabels va contenir les cases graphiques et les positionner sous la forme d'une grille
+        // On place la grille de Tiles
+        JComponent grilleJLabelsTilesEditor = new JPanel(new GridLayout(sizeY, sizeX)); // grilleJLabelTilesEditor va contenir les cases graphiques et les positionner sous la forme d'une grille
         tabJLabelTilesEditor = new CaseTileEditor[sizeX][sizeY];
 
         for (int y = 0; y < sizeY; y++) {
             for (int x = 0; x < sizeX; x++) {
-                CaseTileEditor jlab = new CaseTileEditor(x,y);
-                tabJLabelTilesEditor[x][y] = jlab; // on conserve les cases graphiques dans tabJLabel pour avoir un accès pratique à celles-ci (voir mettreAJourAffichage() )
-                jlab.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                grilleJLabelsTilesEditor.add(jlab);
+                tabJLabelTilesEditor[x][y] = new CaseTileEditor();; // on conserve les cases graphiques dans tabJLabel pour avoir un accès pratique à celles-ci (voir mettreAJourAffichage() )
+                tabJLabelTilesEditor[x][y].setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                int finalX = x; // On doit créer des variables final pour pouvoir les utiliser dans les listeners
+                int finalY = y;
+                // On ajoute un listener sur chaque case pour pouvoir cliquer dessus
+                tabJLabelTilesEditor[x][y].addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        // Si on clic avec le bouton gauche
+                        if(e.getButton() == MouseEvent.BUTTON1){
+                            tileEditor.setEntiteGrilleETile(finalX, finalY); // On set l'entite sur la case
+                        }
+                        // Si on clic avec le bouton droit
+                        else if(e.getButton() == MouseEvent.BUTTON3){
+                            tileEditor.EraseEntiteGrilleETile(finalX, finalY); // On efface l'entité sur la case
+                        }
+                    }
+                });
 
+                grilleJLabelsTilesEditor.add(tabJLabelTilesEditor[x][y]); // On ajoute la case à la grilleJLabelTilesEditor
             }
         }
 
-        TilesEditor.add(grilleJLabelsTilesEditor, BorderLayout.CENTER);
+        TilesEditor.add(grilleJLabelsTilesEditor, BorderLayout.CENTER); // On ajoute la grilleJLabelTilesEditor à la fenêtre TilesEditor
 
-        // Ajout d'un menu a droite de la fenetre pour choisir les tiles
+        // Ajout d'un menu a droite de la fenetre
         JPanel panelTilesEditor = new JPanel();
-        panelTilesEditor.setLayout(new GridLayout(10, 1));
-        // Ajout du bouton quitter
+        panelTilesEditor.setLayout(new GridLayout(13, 1)); // On creer un grille pour placer les boutons et les cases de selection
+
+        // ----------------------------------------------- Bouton Quitter ----------------------------------------------
+
         JButton boutonQuitterTilesEditor = new JButton("Quitter");
         boutonQuitterTilesEditor.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TilesEditor.setVisible(false);
-
+                TilesEditor.dispose();
                 menuPrincipal.setVisible(true);
             }
         });
-        panelTilesEditor.add(boutonQuitterTilesEditor);
+        // Bouton plus joli
+        boutonQuitterTilesEditor.setBackground(Color.WHITE);
+        boutonQuitterTilesEditor.setForeground(Color.BLACK);
+        boutonQuitterTilesEditor.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonQuitterTilesEditor.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonQuitterTilesEditor.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonQuitterTilesEditor.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonQuitterTilesEditor.setBackground(Color.LIGHT_GRAY);
+                boutonQuitterTilesEditor.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonQuitterTilesEditor.setBackground(Color.WHITE);
+                boutonQuitterTilesEditor.setForeground(Color.BLACK);
+            }
+        });
+        panelTilesEditor.add(boutonQuitterTilesEditor); // On ajoute le bouton quitter au panelTilesEditor
+
+        //---------------------------------------------- Bouton Sauver -------------------------------------------------
+
+        JButton boutonSauver = new JButton("Sauver");
+        boutonSauver.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tileEditor.SaveInFile(); // On sauvegarde la grille dans un fichier
+            }
+        });
+        // Bouton plus joli
+        boutonSauver.setBackground(Color.WHITE);
+        boutonSauver.setForeground(Color.BLACK);
+        boutonSauver.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonSauver.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonSauver.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonSauver.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonSauver.setBackground(Color.LIGHT_GRAY);
+                boutonSauver.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonSauver.setBackground(Color.WHITE);
+                boutonSauver.setForeground(Color.BLACK);
+            }
+        });
+        panelTilesEditor.add(boutonSauver); // On ajoute le bouton Sauver au panelTilesEditor
+
+        // ------------------------------------------------ Bouton New -------------------------------------------------
+
+        JButton boutonNew = new JButton("New");
+        boutonNew.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tileEditor.Reset(); // On reset la grille
+            }
+        });
+        // Bouton plus joli
+        boutonNew.setBackground(Color.WHITE);
+        boutonNew.setForeground(Color.BLACK);
+        boutonNew.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonNew.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonNew.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonNew.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonNew.setBackground(Color.LIGHT_GRAY);
+                boutonNew.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonNew.setBackground(Color.WHITE);
+                boutonNew.setForeground(Color.BLACK);
+            }
+        });
+        panelTilesEditor.add(boutonNew); // On ajoute le bouton New au panelTilesEditor
+
+        // ---------------------------------------------- Cases Selection ----------------------------------------------
+
+        tabChoiceTilesEditor = new CaseChoixTileEditor[1][10]; // On creer un tableau de 10 cases de selection
+        for (int y = 0; y < 10; y++) {
+            for (int x = 0; x < 1; x++) {
+                tabChoiceTilesEditor[x][y] = new CaseChoixTileEditor(); // On creer une case de selection
+                tabChoiceTilesEditor[x][y].setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                //fait en sorte que l'image soit centré
+                tabChoiceTilesEditor[x][y].setHorizontalAlignment(SwingConstants.CENTER);
+                tabChoiceTilesEditor[x][y].setVerticalAlignment(SwingConstants.CENTER);
+
+                int finalX = x; // On doit créer des variables final pour pouvoir les utiliser dans les listeners
+                int finalY = y; // On doit créer des variables final pour pouvoir les utiliser dans les listeners
+                tabChoiceTilesEditor[x][y].addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        switch (tabChoiceTilesEditor[finalX][finalY].getName()) {
+                            case "MurVertical" -> tileEditor.setEntiteCourante(new MurVertical(jeu));
+                            case "MurHorizontal" -> tileEditor.setEntiteCourante(new Mur(jeu));
+                            case "MurBrique" -> tileEditor.setEntiteCourante(new MurBrique(jeu));
+                            case "SupportPilier" -> tileEditor.setEntiteCourante(new SupportColonne(jeu));
+                            case "Bombe" -> tileEditor.setEntiteCourante(new Bombe(jeu));
+                            case "Liane" -> tileEditor.setEntiteCourante(new Liane(jeu));
+                            case "Monstre" -> tileEditor.setEntiteCourante(new Bot(jeu));
+                            case "Colonne" -> tileEditor.setEntiteCourante(new Colonne(jeu));
+                            case "ColonneR" -> tileEditor.setEntiteCourante(new ColonneR(jeu));
+                            case "Heros" -> tileEditor.setEntiteCourante(new Heros(jeu));
+                        }
+                    }
+                });
+                panelTilesEditor.add(tabChoiceTilesEditor[x][y], BorderLayout.CENTER);
+            }
+        }
+        // On donne un nom a chaque case de selection pour pouvoir identifier quelle entite lui est associé
+        tabChoiceTilesEditor[0][0].setName("MurVertical");
+        tabChoiceTilesEditor[0][1].setName("MurHorizontal");
+        tabChoiceTilesEditor[0][2].setName("MurBrique");
+        tabChoiceTilesEditor[0][3].setName("SupportPilier");
+        tabChoiceTilesEditor[0][4].setName("Bombe");
+        tabChoiceTilesEditor[0][5].setName("Monstre");
+        tabChoiceTilesEditor[0][6].setName("Liane");
+        tabChoiceTilesEditor[0][7].setName("Colonne");
+        tabChoiceTilesEditor[0][8].setName("ColonneR");
+        tabChoiceTilesEditor[0][9].setName("Heros");
 
         TilesEditor.add(panelTilesEditor, BorderLayout.EAST);
-
     }
-
 
     /**
      * Il y a une grille du côté du modèle ( jeu.getGrille() ) et une grille du côté de la vue (tabJLabel)
@@ -333,6 +472,8 @@ public class VueControleurGyromite extends JFrame implements Observer {
         ((JLabel)menu.getComponent(2)).setText("Bombes : " + jeu.getBombe_restante()); // on met à jour la label bombes
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
+                // ------------------------------------------- Heros ---------------------------------------------------
+
                 if (jeu.getGrille()[x][y][1] instanceof Heros) { // si la grille du modèle contient un Pacman, on associe l'icône Pacman du côté de la vue
 
                     Direction dir = Controle4Directions.getDirectionPrecedente(); // on récupère la direction précédente du heros
@@ -344,16 +485,15 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     else if (dir == Direction.gauche) {
                         tabJLabel[x][y].setIcon(icoHeroGauche);
                     }
-                    else if (dir == Direction.haut)
-                    {
-                        tabJLabel[x][y].setIcon(icoHeroHaut);
-                    }
                     else if (dir == Direction.droite) {
                         tabJLabel[x][y].setIcon(icoHeroDroite);
                     }
                     else {
                         tabJLabel[x][y].setIcon(icoHero);
                     }
+                // -----------------------------------------------------------------------------------------------------
+
+                // ------------------------------------------- Monstre -------------------------------------------------
 
                 } else if (jeu.getGrille()[x][y][1] instanceof Bot) {
                     Direction dir2 = ((Bot) jeu.getGrille()[x][y][1]).getDirectionCourante();
@@ -368,6 +508,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     else {
                         tabJLabel[x][y].setIcon(icoBotGauche);
                     }
+                // -----------------------------------------------------------------------------------------------------
 
                 } else if (jeu.getGrille()[x][y][0] instanceof Mur) {
                     tabJLabel[x][y].setIcon(icoMurHorizontal);
@@ -387,10 +528,103 @@ public class VueControleurGyromite extends JFrame implements Observer {
                 else if (jeu.getGrille()[x][y][1] instanceof ColonneR) {
                     tabJLabel[x][y].setIcon(icoColonneR);
                 }
-                    else {
+                else {
                     tabJLabel[x][y].setIcon(icoVide);
                 }
+
+                // ------------------------------------------- TileEditor ----------------------------------------------
+
+                if(tileEditor.getGrilleETile()[x][y] instanceof Mur)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoMurHorizontal);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof MurVertical)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoMurVertical);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof MurBrique)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoMurBrique);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof SupportColonne)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoSupportColonne);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof Liane)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoLiane);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof Bombe)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoBombe);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof Colonne)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoColonne);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof ColonneR)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoColonneR);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof Bot)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoBotGauche);
+                }
+                else if(tileEditor.getGrilleETile()[x][y] instanceof Heros)
+                {
+                    tabJLabelTilesEditor[x][y].setIcon(icoHero);
+                }
+                else {
+                    tabJLabelTilesEditor[x][y].setIcon(null);
+                }
+                // -----------------------------------------------------------------------------------------------------
             }
+            // ------------------------------------ TileEditor - ChoiceTiles -------------------------------------------
+
+            for(int y = 0; y < 10; y++)
+            {
+                if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "MurVertical"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoMurVertical);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "MurHorizontal"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoMurHorizontal);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "MurBrique"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoMurBrique);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "SupportPilier"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoSupportColonne);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "Liane"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoLiane);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "Bombe"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoBombe);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "Monstre"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoBotGauche);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "Colonne"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoColonne);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "ColonneR"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoColonneR);
+                }
+                else if(Objects.equals(tabChoiceTilesEditor[0][y].getName(), "Heros"))
+                {
+                    tabChoiceTilesEditor[0][y].setIcon(icoHero);
+                }
+            }
+            // ---------------------------------------------------------------------------------------------------------
         }
     }
 
@@ -445,6 +679,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
         // charger une sous partie de l'image à partir de ses coordonnées dans urlIcone
         BufferedImage bi = getSubImage(urlIcone, x, y, w, h);
         // adapter la taille de l'image a la taille du composant (ici : 20x20)
+        assert bi != null;
         return new ImageIcon(bi.getScaledInstance(40, 40, java.awt.Image.SCALE_SMOOTH));
     }
 

@@ -45,7 +45,7 @@ public class Jeu {
     // Tableau de sting qui contient le plateau de jeu
     private String[] prebuildmap = new String[SIZE_Y * SIZE_X];
 
-    private int nvCourant = 2;
+    private int nvCourant = 1;
 
 
     public Jeu(){
@@ -70,7 +70,8 @@ public class Jeu {
         // on vide le tableau de string
         prebuildmap = new String[SIZE_Y * SIZE_X];
         // on charge le nouveau niveau
-        getStaticMap("mapLVL-" + nvCourant + ".txt");
+        getStaticMap("MapLVL/mapLVL-" + nvCourant + ".txt");
+        // on initialise les entites sur le plateau
         initialisationDesEntites();
 
     }
@@ -90,33 +91,16 @@ public class Jeu {
         this.nvCourant = nvCourant;
     }
 
-    private Point StartPos1 = new Point(1,1);
-    private Point StartPos2 = new Point(7,3);
-    private Point StartPos3 = new Point(2,2);
-
+    private Point StartPoint;
+    public void setStartPoint(int x, int y)
+    {
+        StartPoint = new Point(x, y);
+    }
     public void RestartHeroPos(Point pCourant, Entite e ){
-        switch (nvCourant) {
-            case 1 -> deplacerEntite(pCourant, StartPos1, e);
-            case 2 -> deplacerEntite(pCourant, StartPos2, e);
-            case 3 -> deplacerEntite(pCourant, StartPos3, e);
-        }
+        deplacerEntite(pCourant, StartPoint, e);
     }
     private void initialisationDesEntites() {
-        hector = new Heros(this);
-        switch (nvCourant) {
-            case 1 -> addEntite(hector, 1, 1, 1);
-            case 2 -> addEntite(hector, 7, 3, 1);
-            case 3 -> addEntite(hector, 2, 2, 1);
-        }
-
         g = new Gravite();
-        g.addEntiteDynamique(hector);
-
-
-        Controle4Directions.getInstance().addEntiteDynamique(hector);
-        ordonnanceur.add(Controle4Directions.getInstance());
-
-
         for (int i = 0; i < SIZE_Y; i++) {
             for (int j = 0; j < SIZE_X; j++) {
                 if (prebuildmap[i].charAt(j) == '1') {
@@ -166,6 +150,15 @@ public class Jeu {
                     }
                     ColonneDeplB.getInstance().addEntiteDynamique(pil);
                     ordonnanceur.add(ColonneDeplB.getInstance());
+                }
+                else if(prebuildmap[i].charAt(j) == 'H')
+                {
+                    hector = new Heros(this);
+                    addEntite(hector, j, i, 1);
+                    setStartPoint(j, i);
+                    g.addEntiteDynamique(hector);
+                    Controle4Directions.getInstance().addEntiteDynamique(hector);
+                    ordonnanceur.add(Controle4Directions.getInstance());
                 }
 
 
@@ -233,7 +226,7 @@ public class Jeu {
                 // si la case cible contient un smick
                 else if (objetALaPosition(pCible).estEnnemi() && eEstHero) {
                     // si le prof arrive au dessus du smick
-                    if (d == Direction.bas && eEstHero) {
+                    if (d == Direction.bas) {
                         System.out.println("Smicks Ecrasé");
                         score += 50;
                         deplacementAutorise = true;
@@ -243,7 +236,6 @@ public class Jeu {
                         supprimerEntite(objetALaPosition(pCible), pCible.x, pCible.y, 1);
                     } else if(d == Direction.droite || d == Direction.gauche) {
                         System.out.println("Collision avec un Smicks");
-                        deplacementAutorise = false;
                         nb_vie--;
                         g.supprimerEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                         IA.getInstance().removeEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
@@ -263,10 +255,10 @@ public class Jeu {
                 {
                     Entite eBas = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.bas);
                     Entite eHaut = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.haut);
+
                     if(eBas != null && eBas.peutServirDeSupport() && !eBas.estPilier() && !eBas.peutPermettreDeMonterDescendre()
                             || eHaut != null && eHaut.peutServirDeSupport() && !eHaut.estPilier() && !eHaut.peutPermettreDeMonterDescendre())
                     {
-                        System.out.println("Collision avec un pilier");
                         if(pCibleEstHero)
                         {
                             System.out.println("Vous avez été ecrasé");
@@ -283,25 +275,14 @@ public class Jeu {
                             IA.getInstance().removeEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                             g.supprimerEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                             supprimerEntite(objetALaPosition(pCible), pEnnemi.x, pEnnemi.y, 1);
-
-
                             deplacementAutorise = true;
-
                         }
-
                     }
-                    else
-                    {
-                        deplacementAutorise = false;
-                    }
-
                 }
             }
             else {
                 deplacementAutorise = true;
-
             }
-
             if (deplacementAutorise) { // a adapter (collisions murs, etc.)
                 // compter le déplacement : 1 deplacement horizontal et vertical max par pas de temps par entité
                 switch (d) {
@@ -436,6 +417,7 @@ public class Jeu {
             System.out.println("Level " + nvCourant + "finished");
         }
         nvCourant++;
+        // on reset tout pour pas qu'il y ai de bug -> doublons d'entité etc.
         ordonnanceur.clear();
         resetCmptDepl();
         Controle4Directions.reset();
@@ -453,19 +435,13 @@ public class Jeu {
         map.clear();
         LoadLevel();
     }
-
-    public void ResetGame(){
-        nvCourant = 1;
-        score = 0;
-    }
-
     public int GameIsFinished(){
 
         if(bombe_restante <= 0 && nvCourant < 3){
             LevelFinished();
             return 0;
         }
-        else if(bombe_restante <= 0 && nvCourant >= 3){
+        else if(bombe_restante <= 0 && nvCourant == 3){
             System.out.println("Game finished");
             if(HighScore()){
                 System.out.println("New HighScore");

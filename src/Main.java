@@ -1,6 +1,7 @@
 
 import VueControleur.VueControleurGyromite;
 import modele.plateau.Jeu;
+import modele.plateau.TileEditor;
 
 import java.io.IOException;
 
@@ -14,8 +15,9 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws IOException {
         Jeu jeu = new Jeu();
+        TileEditor tileEditor = new TileEditor();
         
-        VueControleurGyromite vc = new VueControleurGyromite(jeu);
+        VueControleurGyromite vc = new VueControleurGyromite(jeu, tileEditor);
 
         jeu.getOrdonnanceur().addObserver(vc);
         

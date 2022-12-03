@@ -4,20 +4,20 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class CaseTileEditor extends JLabel {
+public class CaseChoixTileEditor extends JLabel {
 
-    public CaseTileEditor() {
+    public CaseChoixTileEditor() {
         super();
         setOpaque(true);
-        setBackground(Color.WHITE);
+        setBackground(Color.black);
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                setBackground(Color.GRAY);
+                setBackground(Color.lightGray);
             }
             @Override
             public void mouseExited(MouseEvent e) {
-                setBackground(Color.WHITE);
+                setBackground(Color.black);
             }
 
         });

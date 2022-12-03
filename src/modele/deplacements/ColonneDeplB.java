@@ -36,10 +36,6 @@ public class ColonneDeplB extends RealisateurDeDeplacement {
         for (EntiteDynamique e : lstEntitesDynamiques) {
             int nbrColonne = lstEntitesDynamiques.size();
             if (directionCourante != null && nbrDeplacement < (HAUTEUR_DEPLACEMENT * nbrColonne)){
-                System.out.print("nbDeplacement : ");
-                System.out.println(nbrDeplacement);
-                System.out.print("hauteur max : ");
-                System.out.println(HAUTEUR_DEPLACEMENT);
                 ret = e.avancerDirectionChoisie(directionCourante);
                 if (ret)
                     nbrDeplacement++;
