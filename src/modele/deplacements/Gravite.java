@@ -19,4 +19,9 @@ public class Gravite extends RealisateurDeDeplacement {
         return ret;
     }
 
+    // supprime une entité dynamique de la liste
+    public void supprimerEntiteDynamique(EntiteDynamique e) {
+        lstEntitesDynamiques.remove(e);
+    }
+
 }

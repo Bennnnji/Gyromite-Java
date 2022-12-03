@@ -29,6 +29,8 @@ public class Jeu {
     public int nb_vie = 4;
     public int score = 0;
 
+    private Gravite g;
+
     // compteur de déplacements horizontal et vertical (1 max par défaut, à chaque pas de temps)
     private HashMap<Entite, Integer> cmptDeplH = new HashMap<Entite, Integer>();
     private HashMap<Entite, Integer> cmptDeplV = new HashMap<Entite, Integer>();
@@ -61,26 +63,6 @@ public class Jeu {
 
     public Entite[][][] getGrille() {
         return grilleEntites;
-    }
-    private boolean HeroSurCorde = false;
-
-    public boolean getHeroSurCorde()
-    {
-        return HeroSurCorde;
-    }
-
-    private boolean BotSurCorde = false;
-
-    public boolean getBotSurCorde()
-    {
-        return BotSurCorde;
-    }
-
-    private boolean HeroPerdVie = false;
-
-    public boolean getHeroPerdVie()
-    {
-        return HeroPerdVie;
     }
 
     public void LoadLevel()
@@ -127,7 +109,7 @@ public class Jeu {
             case 3 -> addEntite(hector, 2, 2, 1);
         }
 
-        Gravite g = new Gravite();
+        g = new Gravite();
         g.addEntiteDynamique(hector);
 
 
@@ -153,6 +135,7 @@ public class Jeu {
                     Bot b = new Bot(this);
                     IA newIa = new IA();
                     addEntite(b, j, i, 1);
+                    g.addEntiteDynamique(b);
                     newIa.getInstance().addEntiteDynamique(b);
                     ordonnanceur.add(newIa.getInstance());
 
@@ -217,53 +200,64 @@ public class Jeu {
      */
     public boolean deplacerEntite(Entite e, Direction d) {
         boolean retour = false;
-        boolean Hero = e.peutEtreEcrase() && e.peutServirDeSupport() && !e.estEnnemi(); // permet de savoir si l'entité est un héros
+        boolean eEstHero = e.peutEtreEcrase() && e.peutServirDeSupport() && !e.estEnnemi(); // permet de savoir si l'entité est un héros
+        boolean pCibleEstHero = false; // permet de savoir si la position cible est un héros
         boolean deplacementAutorise = false;
-
-        boolean HeroSurLiane = false;
 
         Point pCourant = map.get(e); // position courante de l'entité
         Point pCible = calculerPointCible(pCourant, d); // calcul de la position cible
+        if(objetALaPosition(pCible) != null)
+        {
+            pCibleEstHero = objetALaPosition(pCible).peutEtreEcrase() && !objetALaPosition(pCible).estEnnemi(); // permet de savoir si la position cible est un héros
+        }
 
         if(contenuDansGrille(pCible)) {
-            // si la case cible contient une bombe
-            if(objetALaPosition(pCible) != null) {
-                if (objetALaPosition(pCible).peutEtreRamasse() && Hero) {
-                    System.out.println("Bombe ramassée");
-                    bombe_restante--;
-                    deplacementAutorise = true;
-                    supprimerEntite(objetALaPosition(pCible), pCible.x, pCible.y, 0);
-                    System.out.println("Il reste " + bombe_restante + " bombes");
-                    score += 100;
-                    System.out.println("Score : " + score);
 
+            if(objetALaPosition(pCible) != null) {
+                // si la case cible contient une bombe
+                if (objetALaPosition(pCible).peutEtreRamasse() && e.peutEtreEcrase()) {
+                    if (eEstHero) {
+                        System.out.println("Bombe ramassée");
+                        bombe_restante--;
+                        deplacementAutorise = true;
+                        supprimerEntite(objetALaPosition(pCible), pCible.x, pCible.y, 0);
+                        System.out.println("Il reste " + bombe_restante + " bombes");
+                        score += 100;
+                        System.out.println("Score : " + score);
+                    }
+                    else if(e.estEnnemi())
+                    {
+                        deplacementAutorise = true;
+                    }
                 }
                 // si la case cible contient un smick
-                else if (objetALaPosition(pCible).estEnnemi() && Hero) {
+                else if (objetALaPosition(pCible).estEnnemi() && eEstHero) {
                     // si le prof arrive au dessus du smick
-                    if (d == Direction.bas) {
+                    if (d == Direction.bas && eEstHero) {
                         System.out.println("Smicks Ecrasé");
                         score += 50;
                         deplacementAutorise = true;
                         System.out.println("Score : " + score);
+                        g.supprimerEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                         IA.getInstance().removeEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                         supprimerEntite(objetALaPosition(pCible), pCible.x, pCible.y, 1);
                     } else if(d == Direction.droite || d == Direction.gauche) {
                         System.out.println("Collision avec un Smicks");
                         deplacementAutorise = false;
                         nb_vie--;
-                        HeroPerdVie = true;
+                        g.supprimerEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                         IA.getInstance().removeEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
                         supprimerEntite(objetALaPosition(pCible), pCible.x, pCible.y, 1);
                         System.out.println("Il vous reste " + nb_vie + " vies");
                         RestartHeroPos(pCourant, e);
                     }
                 }
-                else if(objetALaPosition(pCible).peutPermettreDeMonterDescendre() && Hero) {
-                    System.out.println("Hero sur corde");
-                    HeroSurCorde = true;
+                else if(objetALaPosition(pCible).peutPermettreDeMonterDescendre() && eEstHero) {
                     deplacementAutorise = true;
-
+                }
+                else if(objetALaPosition(pCible).peutPermettreDeMonterDescendre() && e.estEnnemi())
+                {
+                    deplacementAutorise = true;
                 }
                 else if(objetALaPosition(pCible).peutEtreEcrase() && e.estPilier())
                 {
@@ -272,29 +266,34 @@ public class Jeu {
                     if(eBas != null && eBas.peutServirDeSupport() && !eBas.estPilier() && !eBas.peutPermettreDeMonterDescendre()
                             || eHaut != null && eHaut.peutServirDeSupport() && !eHaut.estPilier() && !eHaut.peutPermettreDeMonterDescendre())
                     {
-                        if(!objetALaPosition(pCible).estEnnemi())
+                        System.out.println("Collision avec un pilier");
+                        if(pCibleEstHero)
                         {
                             System.out.println("Vous avez été ecrasé");
                             RestartHeroPos(pCible, objetALaPosition(pCible));
                             System.out.println("Il vous reste " + nb_vie + " vies");
                             deplacementAutorise = true;
                             nb_vie--;
-                            HeroPerdVie = true;
-
 
                         }
-                        else
+                        else if(objetALaPosition(pCible).estEnnemi())
                         {
-                            deplacementAutorise = true;
+                            System.out.println("Smicks Ecrasé");
                             Point pEnnemi = map.get(objetALaPosition(pCible));
-                            supprimerEntite(objetALaPosition(pCible), pEnnemi.x, pEnnemi.y, 1);
                             IA.getInstance().removeEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
-                            supprimerEntite(e, pCourant.x, pCourant.y, 1);
+                            g.supprimerEntiteDynamique((EntiteDynamique) objetALaPosition(pCible));
+                            supprimerEntite(objetALaPosition(pCible), pEnnemi.x, pEnnemi.y, 1);
+
+
+                            deplacementAutorise = true;
 
                         }
 
                     }
-
+                    else
+                    {
+                        deplacementAutorise = false;
+                    }
 
                 }
             }
@@ -440,6 +439,7 @@ public class Jeu {
         ordonnanceur.clear();
         resetCmptDepl();
         Controle4Directions.reset();
+        g.clearEntiteDynamique();
         IA.reset();
         ColonneDepl.reset();
         ColonneDeplB.reset();

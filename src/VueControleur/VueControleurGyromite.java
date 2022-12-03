@@ -13,10 +13,7 @@ import javax.imageio.ImageIO;
 import javax.naming.ldap.Control;
 import javax.swing.*;
 
-import modele.deplacements.ColonneDeplB;
-import modele.deplacements.Controle4Directions;
-import modele.deplacements.Direction;
-import modele.deplacements.ColonneDepl;
+import modele.deplacements.*;
 import modele.plateau.*;
 
 
@@ -37,9 +34,13 @@ public class VueControleurGyromite extends JFrame implements Observer {
     private ImageIcon icoHeroGauche;
     private ImageIcon icoHeroGrimpe;
 
-    private ImageIcon icoHeroPerdVie;
+    private ImageIcon icoHeroHaut;
 
     private ImageIcon icoBot;
+    private ImageIcon icoBotDroite;
+    private ImageIcon icoBotGauche;
+    private ImageIcon icoBotGrimpe;
+
     private ImageIcon icoVide;
     private ImageIcon icoMurHorizontal;
 
@@ -98,15 +99,18 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
 
     private void chargerLesIcones() {
-        icoHero = chargerIcone("Images/player.png", 160, 0, 32, 44);
-        icoHeroGauche = chargerIcone("Images/player.png", 0, 0, 32, 44);
-        icoHeroDroite = chargerIcone("Images/player-2.png", 160, 0, 32, 44);
-        icoHeroGrimpe = chargerIcone("Images/player.png", 0, 88, 32, 44);
-        icoHeroPerdVie = chargerIcone("Images/player.png", 0, 115, 32, 38);
+        icoHero = chargerIcone("Images/player.png", 160, 0, 32, 38);
+        icoHeroGauche = chargerIcone("Images/player.png", 0, 0, 32, 38);
+        icoHeroDroite = chargerIcone("Images/player-2.png", 160, 0, 32, 38);
+        icoHeroGrimpe = chargerIcone("Images/player.png", 0, 88, 32, 38);
+        icoHeroHaut = chargerIcone("Images/player.png", 160, 45, 32, 38);
 
 
 
-        icoBot = chargerIcone("Images/smick.png", 0, 0, 32, 32);//chargerIcone("Images/Pacman.png");
+        icoBotGauche = chargerIcone("Images/smick.png", 0, 0, 32, 32);
+        icoBotDroite = chargerIcone("Images/smick-2.png", 96, 0, 32, 32);
+        icoBotGrimpe = chargerIcone("Images/smick.png", 0, 96, 32, 32);
+
 
         icoVide = chargerIcone("Images/tileset.png", 64, 0, 16, 14);
 
@@ -333,25 +337,37 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
                     Direction dir = Controle4Directions.getDirectionPrecedente(); // on récupère la direction précédente du heros
 
-                    if(jeu.getHeroSurCorde())
+                    if(jeu.getGrille()[x][y][0] instanceof Liane)
                     {
                         tabJLabel[x][y].setIcon(icoHeroGrimpe);
                     }
                     else if (dir == Direction.gauche) {
                         tabJLabel[x][y].setIcon(icoHeroGauche);
                     }
+                    else if (dir == Direction.haut)
+                    {
+                        tabJLabel[x][y].setIcon(icoHeroHaut);
+                    }
                     else if (dir == Direction.droite) {
                         tabJLabel[x][y].setIcon(icoHeroDroite);
-                    }
-                    else if(jeu.getHeroPerdVie()) {
-                        tabJLabel[x][y].setIcon(icoHeroPerdVie);
                     }
                     else {
                         tabJLabel[x][y].setIcon(icoHero);
                     }
 
                 } else if (jeu.getGrille()[x][y][1] instanceof Bot) {
-                    tabJLabel[x][y].setIcon(icoBot);
+                    Direction dir2 = ((Bot) jeu.getGrille()[x][y][1]).getDirectionCourante();
+                    if (jeu.getGrille()[x][y][0] instanceof Liane) {
+                        tabJLabel[x][y].setIcon(icoBotGrimpe);
+                    }
+                    else if (dir2 == Direction.gauche) {
+                        tabJLabel[x][y].setIcon(icoBotGauche);
+                    } else if (dir2 == Direction.droite) {
+                        tabJLabel[x][y].setIcon(icoBotDroite);
+                    }
+                    else {
+                        tabJLabel[x][y].setIcon(icoBotGauche);
+                    }
 
                 } else if (jeu.getGrille()[x][y][0] instanceof Mur) {
                     tabJLabel[x][y].setIcon(icoMurHorizontal);

@@ -8,7 +8,7 @@ public class Bombe extends EntiteStatique {
     public boolean estEnnemi() { return false; }
     @Override
     public boolean peutEtreTraversee() {
-        return false;
+        return true;
     }
 }
 
