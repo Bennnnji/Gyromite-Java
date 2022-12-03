@@ -28,7 +28,6 @@ public class ColonneDeplB extends RealisateurDeDeplacement {
 
     public void setDirectionCourante() {
         directionCourante = estEnHaut ? Direction.bas : Direction.haut;
-        System.out.println("direction courante : " + directionCourante);
     }
 
     public boolean realiserDeplacement() {
