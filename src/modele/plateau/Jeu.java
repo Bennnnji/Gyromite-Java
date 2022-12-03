@@ -263,11 +263,16 @@ public class Jeu {
                 {
                     Entite eBas = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.bas);
                     Entite eHaut = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.haut);
+                    Entite pilBas = (Entite) e.regarderDansLaDirection(Direction.bas);
+                    if(pCibleEstHero && (!pilBas.estEnnemi() && pilBas.peutEtreEcrase() == false))
+                    {
+                        hector.avancerDirectionChoisie(Direction.haut);
+                    }
                     if(eBas != null && eBas.peutServirDeSupport() && !eBas.estPilier() && !eBas.peutPermettreDeMonterDescendre()
                             || eHaut != null && eHaut.peutServirDeSupport() && !eHaut.estPilier() && !eHaut.peutPermettreDeMonterDescendre())
                     {
                         System.out.println("Collision avec un pilier");
-                        if(pCibleEstHero)
+                        if(pCibleEstHero && eBas != null)
                         {
                             System.out.println("Vous avez été ecrasé");
                             RestartHeroPos(pCible, objetALaPosition(pCible));
