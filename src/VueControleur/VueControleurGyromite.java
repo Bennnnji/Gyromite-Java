@@ -328,9 +328,9 @@ public class VueControleurGyromite extends JFrame implements Observer {
      * Il y a une grille du côté du modèle ( jeu.getGrille() ) et une grille du côté de la vue (tabJLabel)
      */
     private void mettreAJourAffichage() {
-        ((JLabel)menu.getComponent(0)).setText("Score : " + jeu.score); // on met à jour la label score
-        ((JLabel)menu.getComponent(1)).setText("Vie : " + jeu.nb_vie); // on met à jour la label vies
-        ((JLabel)menu.getComponent(2)).setText("Bombes : " + jeu.bombe_restante); // on met à jour la label bombes
+        ((JLabel)menu.getComponent(0)).setText("Score : " + jeu.getScore()); // on met à jour la label score
+        ((JLabel)menu.getComponent(1)).setText("Vie : " + jeu.getNbVie()); // on met à jour la label vies
+        ((JLabel)menu.getComponent(2)).setText("Bombes : " + jeu.getBombe_restante()); // on met à jour la label bombes
         for (int x = 0; x < sizeX; x++) {
             for (int y = 0; y < sizeY; y++) {
                 if (jeu.getGrille()[x][y][1] instanceof Heros) { // si la grille du modèle contient un Pacman, on associe l'icône Pacman du côté de la vue
