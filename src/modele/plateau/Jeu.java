@@ -49,7 +49,7 @@ public class Jeu {
 
 
     public Jeu(){
-        LoadLevel();
+        LoadLevel(0);
     }
 
     public void resetCmptDepl() {
@@ -65,12 +65,21 @@ public class Jeu {
         return grilleEntites;
     }
 
-    public void LoadLevel()
+    public void LoadLevel(int ChoixMap)
     {
         // on vide le tableau de string
         prebuildmap = new String[SIZE_Y * SIZE_X];
         // on charge le nouveau niveau
-        getStaticMap(/*"MapLVL/mapLVL-" + nvCourant + ".txt"*/ "CreatedLevel.txt");
+        if(ChoixMap == 1)
+        {
+            getStaticMap("CreatedLevel.txt");
+            nb_vie = 10;
+        }
+        else
+        {
+            getStaticMap("MapLVL/mapLVL-" + nvCourant + ".txt");
+        }
+
         // on initialise les entites sur le plateau
         initialisationDesEntites();
 
@@ -421,8 +430,8 @@ public class Jeu {
         {
             System.out.println("Level " + nvCourant + "finished");
         }
-        nvCourant++;
         // on reset tout pour pas qu'il y ai de bug -> doublons d'entité etc.
+        nvCourant++;
         ordonnanceur.clear();
         resetCmptDepl();
         Controle4Directions.reset();
@@ -438,7 +447,30 @@ public class Jeu {
             }
         }
         map.clear();
-        LoadLevel();
+        LoadLevel(0);
+
+    }
+
+    public void ResetAll()
+    {
+        bombe_restante = 0;
+        score = 0;
+        nb_vie = 4;
+        ordonnanceur.clear();
+        resetCmptDepl();
+        Controle4Directions.reset();
+        g.clearEntiteDynamique();
+        IA.reset();
+        ColonneDepl.reset();
+        ColonneDeplB.reset();
+        // vide la grille d'entité
+        for (int i = 0; i < SIZE_X; i++) {
+            for (int j = 0; j < SIZE_Y; j++) {
+                grilleEntites[i][j][0] = null;
+                grilleEntites[i][j][1] = null;
+            }
+        }
+        map.clear();
     }
     public int GameIsFinished(){
 

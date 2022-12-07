@@ -135,6 +135,48 @@ public class TileEditor {
         }
     }
 
+    // Charge un map txt sur le tile editor
+    public void LoadFromFile() {
+        try {
+            File file = new File("CreatedLevel.txt");
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String line;
+            int i = 0;
+            while ((line = br.readLine()) != null) {
+                for (int j = 0; j < line.length(); j++) {
+                    if (line.charAt(j) == '0') {
+                        grilleETile[j][i] = null;
+                    } else if (line.charAt(j) == '1') {
+                        grilleETile[j][i] = new MurVertical(jeu);
+                    } else if (line.charAt(j) == '2') {
+                        grilleETile[j][i] = new Mur(jeu);
+                    } else if (line.charAt(j) == '3') {
+                        grilleETile[j][i] = new MurBrique(jeu);
+                    } else if (line.charAt(j) == 'G') {
+                        grilleETile[j][i] = new SupportColonne(jeu);
+                    } else if (line.charAt(j) == 'B') {
+                        grilleETile[j][i] = new Bombe(jeu);
+                    } else if (line.charAt(j) == 'M') {
+                        grilleETile[j][i] = new Bot(jeu);
+                    } else if (line.charAt(j) == 'L') {
+                        grilleETile[j][i] = new Liane(jeu);
+                    } else if (line.charAt(j) == 'X') {
+                        grilleETile[j][i] = new Colonne(jeu);
+                    } else if (line.charAt(j) == 'Y') {
+                        grilleETile[j][i] = new ColonneR(jeu);
+                    } else if (line.charAt(j) == 'H') {
+                        grilleETile[j][i] = new Heros(jeu);
+                    }
+                }
+                i++;
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
 

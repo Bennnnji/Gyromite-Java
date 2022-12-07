@@ -55,7 +55,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
     private JLabel[][] tabChoiceTilesEditor; // cases graphique pour tileseditor (au moment du rafraichissement, chaque case va être associée à une icône, suivant ce qui est présent dans le modèle)
 
-    private JFrame menuPrincipal, TilesEditor;
+    private JFrame menuPrincipal, TilesEditor, Regles;
     private JPanel menu;
 
     public VueControleurGyromite(Jeu _jeu, TileEditor _tileEditor) {
@@ -81,6 +81,12 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     case KeyEvent.VK_UP -> Controle4Directions.getInstance().setDirectionCourante(Direction.haut);
                     case KeyEvent.VK_Z -> ColonneDepl.getInstance().setDirectionCourante();
                     case KeyEvent.VK_A -> ColonneDeplB.getInstance().setDirectionCourante();
+                    case KeyEvent.VK_ESCAPE -> {
+                        setVisible(false);
+                        dispose();
+                        menuPrincipal.setVisible(true);
+
+                    }
                 }
             }
         });
@@ -166,6 +172,10 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
         PlacerComposantGraphiqueTileEditor();
 
+        // ----------------------------------Fenêtre Règles-------------------------------------------------------------
+
+        PlacerComposantsGraphiqueRegles();
+
     }
 
     public void PlacerComposantGraphiqueMenuPrincipale()
@@ -175,7 +185,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
         menuPrincipal.setSize(800, 600);
         menuPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panelMenuPrincipal = new JPanel();
-        panelMenuPrincipal.setLayout(new GridLayout(4, 1));
+        panelMenuPrincipal.setLayout(new GridLayout(5, 1));
         menuPrincipal.setResizable(false); //Rend inajustable la taille de la fenêtre
         menuPrincipal.setLocationRelativeTo(null);// Centre le menu principal
 
@@ -196,6 +206,8 @@ public class VueControleurGyromite extends JFrame implements Observer {
             @Override
             public void actionPerformed(ActionEvent e) {
                 menuPrincipal.dispose(); // on ferme la fenêtre
+                jeu.ResetAll();
+                jeu.LoadLevel(0);
                 setVisible(true); // on affiche la fenêtre de jeu
             }
         });
@@ -246,6 +258,38 @@ public class VueControleurGyromite extends JFrame implements Observer {
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 boutonTilesEditor.setBackground(Color.WHITE);
                 boutonTilesEditor.setForeground(Color.BLACK);
+            }
+        });
+
+        // -----------------------------------Bouton Regles ------------------------------------------------------------
+
+        JButton boutonRegles = new JButton("Règles");
+
+        boutonRegles.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                menuPrincipal.setVisible(false); // sinon bug avec le hover
+                Regles.setVisible(true);
+            }
+        });
+
+        panelMenuPrincipal.add(boutonRegles);
+        // Bouton plus joli
+        boutonRegles.setBackground(Color.WHITE);
+        boutonRegles.setForeground(Color.BLACK);
+        boutonRegles.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonRegles.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonRegles.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonRegles.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonRegles.setBackground(Color.LIGHT_GRAY);
+                boutonRegles.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonRegles.setBackground(Color.WHITE);
+                boutonRegles.setForeground(Color.BLACK);
             }
         });
 
@@ -325,7 +369,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
 
         // Ajout d'un menu a droite de la fenetre
         JPanel panelTilesEditor = new JPanel();
-        panelTilesEditor.setLayout(new GridLayout(13, 1)); // On creer un grille pour placer les boutons et les cases de selection
+        panelTilesEditor.setLayout(new GridLayout(15, 1)); // On creer un grille pour placer les boutons et les cases de selection
 
         // ----------------------------------------------- Bouton Quitter ----------------------------------------------
 
@@ -415,6 +459,75 @@ public class VueControleurGyromite extends JFrame implements Observer {
         });
         panelTilesEditor.add(boutonNew); // On ajoute le bouton New au panelTilesEditor
 
+        // ------------------------------------------------- Bouton Charger --------------------------------------------
+
+        JButton boutonCharger = new JButton("Charger");
+        boutonCharger.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tileEditor.LoadFromFile(); // On charge la grille depuis un fichier
+            }
+        });
+        // Bouton plus joli
+        boutonCharger.setBackground(Color.WHITE);
+        boutonCharger.setForeground(Color.BLACK);
+        boutonCharger.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonCharger.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonCharger.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonCharger.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonCharger.setBackground(Color.LIGHT_GRAY);
+                boutonCharger.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonCharger.setBackground(Color.WHITE);
+                boutonCharger.setForeground(Color.BLACK);
+            }
+        });
+
+        panelTilesEditor.add(boutonCharger); // On ajoute le bouton Charger au panelTilesEditor
+
+
+        // ------------------------------------------------ Bouton Jouer -----------------------------------------------
+
+        JButton boutonJouer = new JButton("Jouer");
+        boutonJouer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tileEditor.SaveInFile(); // On sauvegarde la grille dans un fichier
+                TilesEditor.dispose();
+                // on reset tout
+                jeu.ResetAll();
+                // On lance le jeu avec la grille sauvegardée
+                jeu.LoadLevel(1);
+                setVisible(true);
+
+            }
+        });
+        // Bouton plus joli
+        boutonJouer.setBackground(Color.WHITE);
+        boutonJouer.setForeground(Color.BLACK);
+        boutonJouer.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonJouer.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonJouer.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonJouer.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonJouer.setBackground(Color.LIGHT_GRAY);
+                boutonJouer.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonJouer.setBackground(Color.WHITE);
+                boutonJouer.setForeground(Color.BLACK);
+            }
+        });
+        panelTilesEditor.add(boutonJouer); // On ajoute le bouton Jouer au panelTilesEditor
+
+
+
         // ---------------------------------------------- Cases Selection ----------------------------------------------
 
         tabChoiceTilesEditor = new CaseChoixTileEditor[1][10]; // On creer un tableau de 10 cases de selection
@@ -461,6 +574,50 @@ public class VueControleurGyromite extends JFrame implements Observer {
         tabChoiceTilesEditor[0][9].setName("Heros");
 
         TilesEditor.add(panelTilesEditor, BorderLayout.EAST);
+    }
+
+    public void PlacerComposantsGraphiqueRegles(){
+
+        Regles = new JFrame("Règles");
+        Regles.setSize(800, 600);
+        Regles.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        Regles.setLocationRelativeTo(null);
+        Regles.setResizable(false);
+        Regles.setLayout(new BorderLayout());
+        Regles.setBackground(Color.lightGray);
+
+
+        // ---------------------------------------------- Panel Regles ----------------------------------------------
+
+        JPanel panelRegles = new JPanel();
+        panelRegles.setLayout(new BorderLayout());
+        panelRegles.setBackground(Color.lightGray);
+
+        // ---------------------------------------------- Titre Regles ----------------------------------------------
+
+        JLabel titreRegles = new JLabel("Règles du jeu");
+        titreRegles.setFont(new Font("Arial", Font.BOLD, 30));
+        titreRegles.setForeground(Color.WHITE);
+        titreRegles.setHorizontalAlignment(SwingConstants.CENTER);
+        panelRegles.add(titreRegles, BorderLayout.NORTH);
+
+        // ---------------------------------------------- Texte Regles ----------------------------------------------
+
+        JTextArea texteRegles = new JTextArea();
+        texteRegles.setText("Le but du jeu est de ramasser toutes les bombes disponible dans les niveaux\n");
+
+
+        texteRegles.setFont(new Font("Arial", Font.PLAIN, 20));
+        texteRegles.setForeground(Color.white);
+        texteRegles.setBackground(Color.lightGray);
+        texteRegles.setEditable(false);
+        texteRegles.setLineWrap(true);
+        texteRegles.setWrapStyleWord(true);
+        panelRegles.add(texteRegles, BorderLayout.CENTER);
+
+        Regles.add(panelRegles, BorderLayout.CENTER);
+
+
     }
 
     /**
