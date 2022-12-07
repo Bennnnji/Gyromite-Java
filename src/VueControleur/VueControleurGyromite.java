@@ -656,7 +656,9 @@ public class VueControleurGyromite extends JFrame implements Observer {
     }
 
     public void AfficherMenu(){
+        setVisible(false);
         menuPrincipal.setVisible(true);
+
     }
 
     // chargement de l'image entière comme icone

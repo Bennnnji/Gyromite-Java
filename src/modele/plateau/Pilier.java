@@ -71,8 +71,6 @@ public class Pilier extends EntiteDynamique {
 
     public boolean estEnnemi() { return false; }
 
-    public boolean estPilier() { return true; }
-
     @Override
     public boolean peutEtreTraversee() {
         return false;

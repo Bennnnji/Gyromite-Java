@@ -70,7 +70,7 @@ public class Jeu {
         // on vide le tableau de string
         prebuildmap = new String[SIZE_Y * SIZE_X];
         // on charge le nouveau niveau
-        getStaticMap("MapLVL/mapLVL-" + nvCourant + ".txt");
+        getStaticMap(/*"MapLVL/mapLVL-" + nvCourant + ".txt"*/ "CreatedLevel.txt");
         // on initialise les entites sur le plateau
         initialisationDesEntites();
 
@@ -253,18 +253,18 @@ public class Jeu {
                 }
                 else if(objetALaPosition(pCible).peutEtreEcrase() && e.estPilier())
                 {
-                    Entite eBas = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.bas);
-                    Entite eHaut = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.haut);
-                    Entite pilBas = (Entite) e.regarderDansLaDirection(Direction.bas);
+                    Entite eBas = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.bas); // entité sous la cible
+                    Entite eHaut = (Entite) objetALaPosition(pCible).regarderDansLaDirection(Direction.haut); // entité au dessus de la cible
+                    Entite pilBas = (Entite) e.regarderDansLaDirection(Direction.bas); // entité sous le pilier (car ici e est un pilier).
                     if(pCibleEstHero && (!pilBas.estEnnemi() && !pilBas.peutEtreEcrase()))
                     {
-                        hector.avancerDirectionChoisie(Direction.haut);
+                        hector.avancerDirectionChoisie(Direction.haut); // on fait bouger le personnage vers le haut.
                     }
 
                     if(eBas != null && eBas.peutServirDeSupport() && !eBas.estPilier() && !eBas.peutPermettreDeMonterDescendre()
-                            || eHaut != null && eHaut.peutServirDeSupport() && !eHaut.estPilier() && !eHaut.peutPermettreDeMonterDescendre())
+                            || eHaut != null && eHaut.peutServirDeSupport() && !eHaut.estPilier()  && !eHaut.peutPermettreDeMonterDescendre())
                     {
-                        if(pCibleEstHero && eBas != null)
+                        if(pCibleEstHero)
                         {
                             System.out.println("Vous avez été ecrasé");
                             RestartHeroPos(pCible, objetALaPosition(pCible));

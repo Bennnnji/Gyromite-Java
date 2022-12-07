@@ -91,7 +91,7 @@ public class TileEditor {
     }
 
     // On utilise des instanceof pour savoir quel est le type d'entité sur la grille
-    // Je n'ai pas trouver d'autres solutions pour faire ca
+    // On n'a pas trouver d'autres solutions pour faire ca
     public void SaveInFile() {
         try {
             //Creer un fichier
