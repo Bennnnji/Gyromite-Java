@@ -40,7 +40,7 @@ public class TileEditor {
     // Permet d'allouer une entité à une case de la grille
     public void setEntiteGrilleETile(int x, int y) {
         // Si on a au moins 1 Heros sur la grille, on ne peut pas en ajouter un autre, sinon on peut en ajouter un
-        if (entiteCourante instanceof Heros) {
+        if (entiteCourante != null && !entiteCourante.estEnnemi() && entiteCourante.peutEtreEcrase() ) {
                 if(!CompteurHero) {
                     grilleETile[x][y] = entiteCourante;
                     CompteurHero = true;
@@ -167,6 +167,7 @@ public class TileEditor {
                         grilleETile[j][i] = new ColonneR(jeu);
                     } else if (line.charAt(j) == 'H') {
                         grilleETile[j][i] = new Heros(jeu);
+                        CompteurHero = true;
                     }
                 }
                 i++;
