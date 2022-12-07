@@ -615,6 +615,44 @@ public class VueControleurGyromite extends JFrame implements Observer {
         texteRegles.setWrapStyleWord(true);
         panelRegles.add(texteRegles, BorderLayout.CENTER);
 
+
+        // ---------------------------------------------- Bouton Quitter ----------------------------------------------
+
+        JButton boutonQuitter = new JButton("Quitter");
+        boutonQuitter.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonQuitter.setBackground(Color.WHITE);
+        boutonQuitter.setForeground(Color.BLACK);
+        boutonQuitter.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+        boutonQuitter.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Regles.setVisible(false);
+                Regles.dispose();
+                menuPrincipal.setVisible(true);
+            }
+        });
+        // Bouton plus joli
+        boutonQuitter.setBackground(Color.WHITE);
+        boutonQuitter.setForeground(Color.BLACK);
+        boutonQuitter.setFont(new Font("Arial", Font.BOLD, 20));
+        boutonQuitter.setFocusable(false); // Enlève le contour bleu autour du bouton
+        boutonQuitter.setBorder(BorderFactory.createEtchedBorder()); // Ajoute un contour au bouton
+        //ajout d'un hover sur le bouton
+        boutonQuitter.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                boutonQuitter.setBackground(Color.LIGHT_GRAY);
+                boutonQuitter.setForeground(Color.WHITE);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                boutonQuitter.setBackground(Color.WHITE);
+                boutonQuitter.setForeground(Color.BLACK);
+            }
+        });
+
+        panelRegles.add(boutonQuitter, BorderLayout.SOUTH);
+
         Regles.add(panelRegles, BorderLayout.CENTER);
 
 
