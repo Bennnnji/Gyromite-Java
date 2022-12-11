@@ -588,7 +588,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
     public void PlacerComposantsGraphiqueRegles(){
 
         Regles = new JFrame("Règles");
-        Regles.setSize(800, 600);
+        Regles.setSize(1000, 800);
         Regles.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         Regles.setLocationRelativeTo(null);
         Regles.setResizable(false);
@@ -613,10 +613,38 @@ public class VueControleurGyromite extends JFrame implements Observer {
         // ---------------------------------------------- Texte Regles ----------------------------------------------
 
         JTextArea texteRegles = new JTextArea();
-        texteRegles.setText("Le but du jeu est de ramasser toutes les bombes disponible dans les niveaux\n");
+        texteRegles.append("\n Le but du jeu est de ramasser toutes les bombes disponible dans les niveaux\n");
+        texteRegles.append(" La partie s'arrête lorsque toutes les bombes sont ramassez ou que vous n'avez plus de vie.\n");
+
+        texteRegles.append("\n Deux types de piliers sont placés dans la map ( Rouge et Bleu ).\n");
+        texteRegles.append(" Vous avez la possibilités de monter et descendre grâce au piliers mais aussi de se faire \n écraser.\n");
+
+        texteRegles.append("\n Des monstres sont placés dans les niveaux, vous pouvez les écraser :\n");
+        texteRegles.append(" - En tombant dessus tout en appuyant sur la touche 'bas'. \n");
+        texteRegles.append(" - En les écrasant grâce au piliers. \n");
+        texteRegles.append("\n Si vous avancez sur eux vous perdez une vie. \n");
+
+        texteRegles.append("\n Règles du TileEditor :\n");
+        texteRegles.append("\n Vous pouvez créer votre propre niveaux en utilisant le TileEditor ( voir exemple map sur internet ).\n");
+        texteRegles.append(" Vous pouvez : \n");
+        texteRegles.append(" Sauvegarder votre map -> Sauver \n");
+        texteRegles.append(" Effacer la map en cours -> New \n");
+        texteRegles.append(" Charger une map ( précédemment sauver )-> Charger \n");
+        texteRegles.append(" Jouer à votre map directement -> Jouer \n");
+        texteRegles.append("\n Attention : \n");
+        texteRegles.append(" Vous ne pouvez pas sauvegarder une map si vous n'avez pas placé de Heros et une bombe.\n");
+        texteRegles.append(" Placement des colonnes : \n");
+        texteRegles.append(" Il est important de placer une seul colonne poour l'entièreté d'un pilier.\n");
+        texteRegles.append(" - Pour les rouges, il faut placer une colonne à coté du support de pilier car elle sont dirigé vers le haut, de base.\n");
+        texteRegles.append(" - Pour les bleus, il faut placer une colonne deux cases en dessous du support car elle sont dirigé vers le bas, de base.\n");
+
+        texteRegles.append("\n Contrôles : \n");
+        texteRegles.append("\n - Déplacement joueur :  flèches haut, bas, gauche, droite \n");
+        texteRegles.append(" - Déplacement piliers : touche 'a' pour les rouges, touche 'z' pour les bleus\n");
 
 
-        texteRegles.setFont(new Font("Arial", Font.PLAIN, 20));
+
+        texteRegles.setFont(new Font("Arial", Font.PLAIN, 17));
         texteRegles.setForeground(Color.white);
         texteRegles.setBackground(Color.lightGray);
         texteRegles.setEditable(false);
