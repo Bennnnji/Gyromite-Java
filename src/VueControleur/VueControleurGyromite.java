@@ -496,13 +496,22 @@ public class VueControleurGyromite extends JFrame implements Observer {
         boutonJouer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                tileEditor.SaveInFile(); // On sauvegarde la grille dans un fichier
-                TilesEditor.dispose();
+
                 // on reset tout
-                jeu.ResetAll();
-                // On lance le jeu avec la grille sauvegardée
-                jeu.LoadLevel(1);
-                setVisible(true);
+                if (tileEditor.getLancerJeu()){
+                    jeu.ResetAll();
+                    // On lance le jeu avec la grille sauvegardée
+                    jeu.LoadLevel(1);
+                    setVisible(true);
+                    tileEditor.SaveInFile(); // On sauvegarde la grille dans un fichier
+                    TilesEditor.dispose();
+                }
+                else
+                {
+                    tileEditor.SaveInFile(); // On sauvegarde la grille dans un fichier
+                    System.out.println("Le jeu n'a pas été lancé");
+                }
+
 
             }
         });
@@ -686,9 +695,9 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     else {
                         tabJLabel[x][y].setIcon(icoHero);
                     }
-                // -----------------------------------------------------------------------------------------------------
+                    // -----------------------------------------------------------------------------------------------------
 
-                // ------------------------------------------- Monstre -------------------------------------------------
+                    // ------------------------------------------- Monstre -------------------------------------------------
 
                 } else if (jeu.getGrille()[x][y][1] instanceof Bot) {
                     Direction dir2 = ((Bot) jeu.getGrille()[x][y][1]).getDirectionCourante();
@@ -703,7 +712,7 @@ public class VueControleurGyromite extends JFrame implements Observer {
                     else {
                         tabJLabel[x][y].setIcon(icoBotGauche);
                     }
-                // -----------------------------------------------------------------------------------------------------
+                    // -----------------------------------------------------------------------------------------------------
 
                 } else if (jeu.getGrille()[x][y][0] instanceof Mur) {
                     tabJLabel[x][y].setIcon(icoMurHorizontal);

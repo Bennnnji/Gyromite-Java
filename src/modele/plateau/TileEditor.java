@@ -20,6 +20,10 @@ public class TileEditor {
 
     private boolean CompteurHero = false; // permet de savoir si un héros a déjà été placé
 
+    private int CompteurBombe = 0; // permet de savoir le nb de bombes placées
+
+    private boolean LancerJeu = false; // permet de savoir si le jeu peut etre lancé
+
     public void setEntiteCourante(Entite entite) {
         entiteCourante = entite;
     }
@@ -37,28 +41,39 @@ public class TileEditor {
         return grilleETile;
     }
 
+    public boolean getLancerJeu() {
+        return LancerJeu;
+    }
     // Permet d'allouer une entité à une case de la grille
     public void setEntiteGrilleETile(int x, int y) {
         // Si on a au moins 1 Heros sur la grille, on ne peut pas en ajouter un autre, sinon on peut en ajouter un
         if (entiteCourante != null && !entiteCourante.estEnnemi() && entiteCourante.peutEtreEcrase() ) {
-                if(!CompteurHero) {
-                    grilleETile[x][y] = entiteCourante;
-                    CompteurHero = true;
-                } else
-                {
-                    System.out.println("Vous avez déjà un Heros sur la grille");
-                }
+            if(!CompteurHero) {
+                grilleETile[x][y] = entiteCourante;
+                CompteurHero = true;
+            } else
+            {
+                System.out.println("Vous avez déjà un Heros sur la grille");
+            }
         } else {
             grilleETile[x][y] = entiteCourante;
+        }
+        if(entiteCourante != null && entiteCourante.peutEtreRamasse() && entiteCourante.peutEtreTraversee())
+        {
+            CompteurBombe++;
         }
     }
 
     // Efface l'entité qui est sur la case
     public void EraseEntiteGrilleETile(int x, int y) {
         // Si l'entité est un Heros, on supprime le compteur
-        if(grilleETile[x][y] instanceof Heros)
+        if(grilleETile[x][y] != null && grilleETile[x][y].estEnnemi() && grilleETile[x][y].peutEtreEcrase())
         {
             CompteurHero = false;
+        }
+        else if (grilleETile[x][y] != null && grilleETile[x][y].peutEtreRamasse() && grilleETile[x][y].peutEtreTraversee())
+        {
+            CompteurBombe--;
         }
         this.grilleETile[x][y] = null;
     }
@@ -85,6 +100,7 @@ public class TileEditor {
             for (int j = 0; j < SIZE_Y; j++) {
                 grilleETile[i][j] = null; // on met toutes les cases à null
                 CompteurHero = false; // on remet le compteur de Heros à  0
+                CompteurBombe = 0; // on remet le compteur de Bombe à 0
                 FirstPattern(); // on remet le pattern de base
             }
         }
@@ -93,45 +109,61 @@ public class TileEditor {
     // On utilise des instanceof pour savoir quel est le type d'entité sur la grille
     // On n'a pas trouver d'autres solutions pour faire ca
     public void SaveInFile() {
-        try {
-            //Creer un fichier
-            File file = new File("CreatedLevel.txt");
+        //Si il n'y a pas Heros sur la grille, on peut pas sauvegarder
+        if(!CompteurHero)
+        {
+            System.out.println("Vous n'avez pas de Heros sur la grille");
+            LancerJeu = false;
+            return;
+        }
+        else if(CompteurBombe == 0)
+        {
+            System.out.println("Vous n'avez pas de Bombe sur la grille");
+            LancerJeu = false;
+            return;
+        }
+        else {
+            LancerJeu = true;
+            try {
+                //Creer un fichier
+                File file = new File("CreatedLevel.txt");
 
-            FileWriter fw = new FileWriter(file);
-            BufferedWriter bw = new BufferedWriter(fw);
-            for (int j = 0; j < SIZE_Y; j++) {
-                for (int i = 0; i < SIZE_X; i++) {
-                    if (grilleETile[i][j] == null) {
-                        bw.write("0");
-                    } else if (grilleETile[i][j] instanceof Mur) {
-                        bw.write("2");
-                    } else if (grilleETile[i][j] instanceof MurVertical) {
-                        bw.write("1");
-                    } else if (grilleETile[i][j] instanceof MurBrique) {
-                        bw.write("3");
-                    } else if (grilleETile[i][j] instanceof SupportColonne) {
-                        bw.write("G");
-                    } else if (grilleETile[i][j] instanceof Bombe) {
-                        bw.write("B");
-                    } else if (grilleETile[i][j] instanceof Bot) {
-                        bw.write("M");
-                    } else if (grilleETile[i][j] instanceof Liane) {
-                        bw.write("L");
-                    } else if (grilleETile[i][j] instanceof Colonne) {
-                        bw.write("X");
-                    } else if (grilleETile[i][j] instanceof ColonneR) {
-                        bw.write("Y");
-                    } else if (grilleETile[i][j] instanceof Heros) {
-                        bw.write("H");
+                FileWriter fw = new FileWriter(file);
+                BufferedWriter bw = new BufferedWriter(fw);
+                for (int j = 0; j < SIZE_Y; j++) {
+                    for (int i = 0; i < SIZE_X; i++) {
+                        if (grilleETile[i][j] == null) {
+                            bw.write("0");
+                        } else if (grilleETile[i][j] instanceof Mur) {
+                            bw.write("2");
+                        } else if (grilleETile[i][j] instanceof MurVertical) {
+                            bw.write("1");
+                        } else if (grilleETile[i][j] instanceof MurBrique) {
+                            bw.write("3");
+                        } else if (grilleETile[i][j] instanceof SupportColonne) {
+                            bw.write("G");
+                        } else if (grilleETile[i][j] instanceof Bombe) {
+                            bw.write("B");
+                        } else if (grilleETile[i][j] instanceof Bot) {
+                            bw.write("M");
+                        } else if (grilleETile[i][j] instanceof Liane) {
+                            bw.write("L");
+                        } else if (grilleETile[i][j] instanceof Colonne) {
+                            bw.write("X");
+                        } else if (grilleETile[i][j] instanceof ColonneR) {
+                            bw.write("Y");
+                        } else if (grilleETile[i][j] instanceof Heros) {
+                            bw.write("H");
+                        }
                     }
+                    bw.write("\n");
                 }
-                bw.write("\n");
-            }
-            bw.close();
-            System.out.println("Fichier créé avec succès");
+                bw.close();
+                System.out.println("Fichier créé avec succès");
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -157,6 +189,7 @@ public class TileEditor {
                         grilleETile[j][i] = new SupportColonne(jeu);
                     } else if (line.charAt(j) == 'B') {
                         grilleETile[j][i] = new Bombe(jeu);
+                        CompteurBombe++;
                     } else if (line.charAt(j) == 'M') {
                         grilleETile[j][i] = new Bot(jeu);
                     } else if (line.charAt(j) == 'L') {
@@ -177,8 +210,4 @@ public class TileEditor {
             e.printStackTrace();
         }
     }
-
-
-
-
 }
