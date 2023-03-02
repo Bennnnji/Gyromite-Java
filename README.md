@@ -1,6 +1,6 @@
 # LIFAPOO
 
-
+### Le Projet est entierement expliqué dans le pdf : LIFAPOO PROJET Gyromite.pdf
 
 ## Getting started
 
